@@ -48,7 +48,7 @@ for exp_num,config in enumerate(experiments):
         results = exec_experiment(config) # [exec experiment]
         cache.save_exp(uuid,config,results) # save to cache
 
-# -- 
+# -- (4) print results! --
 records = cache.load_flat_records(experiments)
 print(records.columns)
 print(records[['accuracy','precision','dataset','nn_arch','noise_level']])
