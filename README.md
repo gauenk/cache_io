@@ -1,1 +1,1 @@
-This repo allows users to cache the results from their projects to be loaded more quickly. This like a home-made version of "Weights&Biases" before they became an popular, great code base. I recommend [checking them out](https://github.com/wandb).
+This repo allows users to cache the results from their projects to be loaded more quickly. This like a home-made version of "Weights&Biases" before they became a popular, great code base. I recommend [checking them out](https://github.com/wandb).
