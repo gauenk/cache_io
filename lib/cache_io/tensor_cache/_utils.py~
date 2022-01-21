@@ -1,0 +1,9 @@
+def get_tensor_cache_names(path,data):
+    names_fn = path / "names.npy"
+    if not names_fn.exists():
+        if isinstance(data,dict): names = np.array(list(data.keys))
+        else: names = None
+    else:
+        names = np.load(names_fn,allow_pickle=False)        
+    return names
+
