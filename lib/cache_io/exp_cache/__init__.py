@@ -35,6 +35,9 @@ class ExpCache():
     def get_uuid_from_config(self,config):
         return self.uuid_cache.get_uuid_from_config(config)
 
+    def get_config_from_uuid(self,uuid):
+        return self.uuid_cache.get_config_from_uuid(uuid)
+
     def convert_tensors_to_files(self,uuid,data):
         return self.tensor_cache.convert_tensors_to_files(uuid,data)
 
@@ -111,13 +114,17 @@ class ExpCache():
         rlen = -1
         for result_id,result in results.items():
             record[result_id] = list(result)
-            rlen = len(result)
+            rlen = len(result) if rlen == -1 else rlen
+            if len(result) < rlen:
+                assert len(result) == 1,"if neq must be 1."
+                val = np.array([result[0]])
+                record[result_id] = list(repeat(val,'1 -> r',r=rlen))
 
         # -- repeat uuid --
         uuid_np = repeat(np.array([str(uuid)]),'1 -> r',r=rlen)
         record['uuid'] = list(uuid_np)
 
-        # -- standard append --
+        # -- standard append for config; each is a single value --
         for key,value in config.items():
             record[key] = list(repeat(np.array([value]),'1 -> r',r=rlen))
 

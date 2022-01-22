@@ -5,6 +5,7 @@ from ._debug import VERBOSE
 
 def compare_config(existing_config,proposed_config):
     for key,value in existing_config.items():
+        if not(key in proposed_config): return False
         if proposed_config[key] != value: return False
     return True
 
