@@ -90,6 +90,18 @@ class ExpCache():
             record[result_id] = result
         records.append(record)
 
+    def load_all_records(self):
+        records = []
+        data = self.uuid_cache.data
+        for uuid in data.uuid:
+            config = self.get_config_from_uuid(uuid)
+            results = self.load_exp(config)
+            if results is None: continue
+            self.append_to_flat_record(records,uuid,config,results)
+        records = pd.concat(records)
+        return records
+
+
     def load_flat_records(self,exps):
         """
         Load records but flatten exp configs against
@@ -113,12 +125,15 @@ class ExpCache():
         # -- append results --
         rlen = -1
         for result_id,result in results.items():
-            record[result_id] = list(result)
+            if len(result) == 0: continue
             rlen = len(result) if rlen == -1 else rlen
+            record[result_id] = list(result)
             if len(result) < rlen:
                 assert len(result) == 1,"if neq must be 1."
                 val = np.array([result[0]])
                 record[result_id] = list(repeat(val,'1 -> r',r=rlen))
+            elif len(result) > rlen:
+                raise ValueError("We can't have multiple results lengths.")
 
         # -- repeat uuid --
         uuid_np = repeat(np.array([str(uuid)]),'1 -> r',r=rlen)
@@ -201,7 +216,31 @@ class ExpCache():
         # -- remove uuid cache --
         if uuid_file.exists(): os.remove(uuid_file)
         assert not uuid_file.exists(),f"uuid file [{uuid_file}] should be removed."
-        self.uuid_cache.init_uuid_file()
+        # self.uuid_cache.init_uuid_file()
+
+    def clear_exp(self,uuid):
+        print(f"Clearing Experiment [uuid = {str(uuid)}]")
+
+        # -- remove all experiment results --
+        data = self.uuid_cache.data
+        if not(uuid in data.uuid):
+            print(f"[exp_cache] No experiment found with [uuid = {str(uuid)}]")
+            return
+
+        # -- remove exp data --
+        uuid_path = self.root / Path(uuid)
+        if uuid_path.exists():
+            shutil.rmtree(uuid_path)
+            msg = f"exp cache [{uuid_path}] should be removed."
+            assert not uuid_path.exists(),msg
+        torch_path = self.pytorch_filepath(uuid)
+        if torch_path.exists():
+            shutil.rmtree(torch_path)
+            msg = f"exp cache [{torch_path}] should be removed."
+            assert not torch_path.exists(),msg
+
+        # -- remove uuid from uuid_cache --
+        self.uuid_cache.remove_uuid(uuid)
 
     # -- allow for model checkpoints to be removed with cache --
     def pytorch_filepath(self,uuid):

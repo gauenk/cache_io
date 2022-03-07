@@ -68,6 +68,14 @@ class UUIDCache():
         """
         return read_uuid_file(self.uuid_file)
 
+    def remove_uuid(self,uuid):
+        data = read_uuid_file(self.uuid_file)
+        if not(uuid in data):
+            print(f"[uuid_cache] No uuid found in cache [uuid = {str(uuid)}]")
+            return
+        del data[uuid]
+        write_uuid_file(self.uuid_file,data)
+
     def get_uuid_from_config(self,exp_config):
         if self.data is None:
             self.init_uuid_file()

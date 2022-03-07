@@ -6,7 +6,7 @@ from pathlib import Path
 
 def get_tensor_cache_names(path,data):
     """
-    Read "names.npy" 
+    Read "names.npy"
 
     .../path/
         names.npy [modify]

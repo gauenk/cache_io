@@ -53,9 +53,9 @@ def format_tensor_results(results_input,results_output,dims,append=True):
 
         # -- select format func --
         mgroup = results_input[metric_group]
-        if isinstance(mgroup,dict): 
+        if isinstance(mgroup,dict):
             format_tensor_dict(metric_group,results_input,results_output,dim,append)
-        elif isinstance(mgroup,list) or isinstance(mgroup,np.ndarray): 
+        elif isinstance(mgroup,list) or isinstance(mgroup,np.ndarray):
             format_tensor_list(metric_group,results_input,results_output,dim,append)
         else:
             raise TypeError(f"Uknown metric group type [{type(mgroup)}]")

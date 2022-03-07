@@ -22,7 +22,7 @@ def append_tensor_cache(root,fieldname,data,dim=2,overwrite=False):
         for name,r_value in data.items():
             data[name] = torch.cat([r_value,data[name]],dim=dim)
     write_tensor_cache(path,data)
-    
+
     return str(path)
 
 def get_tensor_cache_names(path,data):
@@ -31,6 +31,6 @@ def get_tensor_cache_names(path,data):
         if isinstance(data,dict): names = np.array(list(data.keys))
         else: names = None
     else:
-        names = np.load(names_fn,allow_pickle=False)        
+        names = np.load(names_fn,allow_pickle=False)
     return names
 
