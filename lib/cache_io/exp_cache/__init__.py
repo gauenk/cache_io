@@ -17,6 +17,13 @@ from cache_io.tensor_cache import TensorCache
 
 VERBOSE=False
 
+def isfloat(num):
+    try:
+        float(num)
+        return True
+    except:
+        return False
+
 class ExpCache():
 
     def __init__(self,root,version):
@@ -125,6 +132,7 @@ class ExpCache():
         # -- append results --
         rlen = -1
         for result_id,result in results.items():
+            if isfloat(result): result = np.array([result])
             if len(result) == 0: continue
             rlen = len(result) if rlen == -1 else rlen
             record[result_id] = list(result)
@@ -132,7 +140,7 @@ class ExpCache():
                 assert len(result) == 1,"if neq must be 1."
                 val = np.array([result[0]])
                 record[result_id] = list(repeat(val,'1 -> r',r=rlen))
-            elif len(result) > rlen:
+            elif len(result) > rlen and rlen > 1:
                 raise ValueError("We can't have multiple results lengths.")
 
         # -- repeat uuid --

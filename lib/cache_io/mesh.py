@@ -14,6 +14,9 @@ def mesh_pydicts(fields):
     names,lists = zip(*fields.items())
     return create_named_meshgrid(lists,names)
 
+def append_configs(cfg_list,cfg2append):
+    for e,exp in enumerate(cfg_list):
+        cfg_list[e] = edict(dict(exp,**cfg2append))
 
 #
 #
