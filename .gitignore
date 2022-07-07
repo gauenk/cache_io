@@ -2,6 +2,7 @@ build/*
 cmake/*
 data/*
 output/*
+lib/*egg-info/
 .cache_io/*
 *.py[co]
 *__pycache__/
