@@ -24,6 +24,14 @@ def isfloat(num):
     except:
         return False
 
+def isstr(num):
+    try:
+        num = str(num)
+        return True
+    except:
+        return False
+
+
 class ExpCache():
 
     def __init__(self,root,version):
@@ -108,13 +116,37 @@ class ExpCache():
         records = pd.concat(records)
         return records
 
+    def _load_agg_records(self,save_agg):
+        # -- check if saved --
+        if not(save_agg is None):
+            save_agg = Path(save_agg)
+            if save_agg.exists():
+                records = pd.read_pickle(str(save_agg))
+            else:
+                records = None
+            return records
+        else:
+            return None
 
-    def load_flat_records(self,exps):
+    def _save_agg_records(self,records,save_agg):
+        # -- check if saved --
+        if not(save_agg is None):
+            save_agg = Path(save_agg)
+            records.to_pickle(save_agg)
+
+    def load_flat_records(self,exps,save_agg=None):
         """
         Load records but flatten exp configs against
         experiments. Requires "results" to be have
         equal number of rows.
         """
+
+        # -- [optional] check & rtn if saved --
+        records = self._load_agg_records(save_agg)
+        if not(records is None):
+            return records
+
+        # -- load each record --
         records = []
         for config in tqdm.tqdm(exps):
             results = self.load_exp(config)
@@ -122,6 +154,10 @@ class ExpCache():
             if results is None: continue
             self.append_to_flat_record(records,uuid,config,results)
         records = pd.concat(records)
+
+        # -- [optional] save agg records --
+        self._save_agg_records(records,save_agg)
+
         return records
 
     def append_to_flat_record(self,records,uuid,config,results):
@@ -132,6 +168,7 @@ class ExpCache():
         # -- append results --
         rlen = -1
         for result_id,result in results.items():
+            if isstr(result): result = [result]
             if isfloat(result): result = np.array([result])
             if len(result) == 0: continue
             rlen = len(result) if rlen == -1 else rlen

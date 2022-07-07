@@ -11,7 +11,17 @@ from easydict import EasyDict as edict
 #
 
 def mesh_pydicts(fields):
+
+    # -- split names and lists --
     names,lists = zip(*fields.items())
+
+    # -- correct the order --
+    names = list(names)
+    names.reverse()
+    lists = list(lists)
+    lists.reverse()
+
+    # -- create meshgrid --
     return create_named_meshgrid(lists,names)
 
 def append_configs(cfg_list,cfg2append):
@@ -61,7 +71,6 @@ def create_meshgrid(lists):
                 elem = int(elem)
             mesh_m.append(elem)
         mesh_T.append(mesh_m)
-
     return mesh_T
 
 def apply_mesh_filter(mesh,mfilter,ftype="keep"):

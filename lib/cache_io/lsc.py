@@ -23,26 +23,27 @@ def create_uuid_list_from_glob(path_l,cache):
 
 def main():
 
-    if len(sys.argv) == 1:
+    if len(sys.argv) < 3:
         print("lsc allows users to quickly read cache info.")
-        print("Usage: lsc [version] [path_to_json_dir] [optional:[glob of] uuids]")
+        print("Usage: lsc [name] [path_to_json_dir] [optional:[glob of] uuids]")
         exit()
 
     try:
-        version = float(sys.argv[1])
+        name = float(sys.argv[1])
     except:
-        version = sys.argv[1]
+        name = sys.argv[1]
         # print("lsc recommends the second argument be a float.")
         # exit()
 
     # -- load cache --
+    print(sys.argv)
+    name = sys.argv[1]
     root = Path(sys.argv[2])
-    version = sys.argv[1]
-    cache = UUIDCache(root,version)
+    cache = UUIDCache(root,name)
 
     # -- report DNE --
     if not cache.uuid_file.exists():
-        print(f"lsc detects the UUID cache version [{version}] does not exist.")
+        print(f"lsc detects the UUID cache name [{name}] does not exist.")
         exit()
 
     # -- collect configs from paths --
