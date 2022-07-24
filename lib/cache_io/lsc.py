@@ -25,7 +25,7 @@ def main():
 
     if len(sys.argv) < 3:
         print("lsc allows users to quickly read cache info.")
-        print("Usage: lsc [name] [path_to_json_dir] [optional:[glob of] uuids]")
+        print("Usage: lsc [cache_name] [path_to_json_dir] [optional:[glob of] uuids]")
         exit()
 
     try:
@@ -37,9 +37,9 @@ def main():
 
     # -- load cache --
     print(sys.argv)
-    name = sys.argv[1]
+    cache_name = sys.argv[1]
     root = Path(sys.argv[2])
-    cache = UUIDCache(root,name)
+    cache = UUIDCache(root,cache_name)
 
     # -- report DNE --
     if not cache.uuid_file.exists():

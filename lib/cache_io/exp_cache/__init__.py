@@ -116,14 +116,15 @@ class ExpCache():
         records = pd.concat(records)
         return records
 
-    def _load_agg_records(self,save_agg):
+    def _load_agg_records(self,save_agg,clear=False):
         # -- check if saved --
+        records = None
         if not(save_agg is None):
             save_agg = Path(save_agg)
-            if save_agg.exists():
+            if save_agg.exists() and clear is False:
                 records = pd.read_pickle(str(save_agg))
-            else:
-                records = None
+            elif save_agg.exists() and clear is True:
+                save_agg.unlink() # delete file.
             return records
         else:
             return None
@@ -134,7 +135,7 @@ class ExpCache():
             save_agg = Path(save_agg)
             records.to_pickle(save_agg)
 
-    def load_flat_records(self,exps,save_agg=None):
+    def load_flat_records(self,exps,save_agg=None,clear=False):
         """
         Load records but flatten exp configs against
         experiments. Requires "results" to be have
@@ -142,7 +143,7 @@ class ExpCache():
         """
 
         # -- [optional] check & rtn if saved --
-        records = self._load_agg_records(save_agg)
+        records = self._load_agg_records(save_agg,clear)
         if not(records is None):
             return records
 

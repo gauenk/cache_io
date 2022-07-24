@@ -46,15 +46,15 @@ from ._debug import *
 
 class UUIDCache():
 
-    def __init__(self,root,version):
+    def __init__(self,root,cache_name):
         self.root = root if isinstance(root,Path) else Path(root)
-        self.version = version
+        self.cache_name = cache_name
         self.uuid_file_skel = "uuid_database_{:s}.json"
         # self.init_uuid_file()
 
     @property
     def uuid_file(self):
-        return self.root / self.uuid_file_skel.format(self.version)
+        return self.root / self.uuid_file_skel.format(self.cache_name)
 
     @property
     def data(self):
@@ -115,17 +115,19 @@ class UUIDCache():
             return uuid
 
     def append_new(self,new_field,new_data):
+        print("WARNING: This feature needs updating.")
+        exit(0)
         data = self.data
         cont = set_new_field_default(data,new_field,default)
         if cont == -1:
             print(f"Not appending new field [{new_field}]. Field already exists.")
             return None
         set_new_field_data(data,new_data,new_field)
-        self.version = self.version + 1
+        self.cache_name = self.cache_name + 1
         write_uuid_file(self.uuid_file,data)
-        print(f"Upgraded UUID cache version from v{self.version-1} to v{self.version}")
+        print(f"Upgraded UUID cache cache_name from v{self.cache_name-1} to v{self.cache_name}")
 
     def __str__(self):
-        return f"UUIDCache version [{self.version}] with file at [{self.uuid_file}]"
+        return f"UUIDCache cache_name [{self.cache_name}] with file at [{self.uuid_file}]"
 
 
