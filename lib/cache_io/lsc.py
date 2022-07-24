@@ -36,7 +36,6 @@ def main():
         # exit()
 
     # -- load cache --
-    print(sys.argv)
     cache_name = sys.argv[1]
     root = Path(sys.argv[2])
     cache = UUIDCache(root,cache_name)
