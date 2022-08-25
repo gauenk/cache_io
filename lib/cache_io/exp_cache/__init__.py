@@ -200,9 +200,19 @@ class ExpCache():
         assert all_equal,f"All record shapes must be equal.\n\n{msg}"
         pdid = record['pdid']
 
-        # record = pd.DataFrame().append(record,ignore_index=True)
+        # -- squeeze to 0-dim if possible --
+        self.squeeze_0dims(record,rlen)
+
+        # -- append --
         record = pd.DataFrame(record,index=pdid)
         records.append(record)
+
+    def squeeze_0dims(self,record,rlen):
+        if rlen == 1:
+            for key,val in record.items():
+                print(key,type(val),type(val[0]),len(val),val[0].ndim)
+                if val[0].ndim == 0:
+                    record[key] = val[0]
 
     def check_equal_field_len(self,record):
         all_equal,msg,vlen = True,"",-1
