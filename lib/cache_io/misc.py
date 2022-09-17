@@ -1,4 +1,6 @@
 
+from pathlib import Path
+
 
 def exp_strings2bools(exp):
     for field in exp:
@@ -12,3 +14,4 @@ def strings2bools(exps):
     # convert "true" or "false" to True or False
     for exp in exps:
         exp_strings2bools(exps)
+
