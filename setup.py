@@ -27,7 +27,8 @@ setup(
     license='MIT',
     keywords='caching, results, big data ',
     install_requires=['easydict'],
-    packages=find_packages(),
+    package_dir={"": "lib"},
+    packages=find_packages(""),
     entry_points = {
         'console_scripts': ['lsc=cache_io.lsc:main'],
     }
