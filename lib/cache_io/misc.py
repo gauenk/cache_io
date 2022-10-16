@@ -9,6 +9,8 @@ def exp_strings2bools(exp):
             exp[field] = True
         elif exp[field].lower() == "false":
             exp[field] = False
+        elif exp[field].lower() == "none":
+            exp[field] = None
 
 def strings2bools(exps):
     # convert "true" or "false" to True or False

@@ -117,6 +117,7 @@ class UUIDCache():
 
     def add_uuid_config_pair(self,uuid,exp_config):
         if self.data is None:
+            # print("\n"*10 + "init!" + "\n"*10)
             self.init_uuid_file()
         new_pair = edict({'uuid':uuid,'config':exp_config})
         append_new_pair(self.data,self.uuid_file,new_pair)
