@@ -107,12 +107,19 @@ class UUIDCache():
         if uuid == -1:
             if VERBOSE: print("Creating a new UUID and adding to cache file.")
             uuid = str(uuid_gen.uuid4())
-            new_pair = edict({'uuid':uuid,'config':exp_config})
-            append_new_pair(self.data,self.uuid_file,new_pair)
+            self.add_uuid_config_pair(uuid,exp_config)
+            # new_pair = edict({'uuid':uuid,'config':exp_config})
+            # append_new_pair(self.data,self.uuid_file,new_pair)
             return uuid
         else:
             if VERBOSE: print(f"Exp Config Already has a UUID {uuid}")
             return uuid
+
+    def add_uuid_config_pair(self,uuid,exp_config):
+        if self.data is None:
+            self.init_uuid_file()
+        new_pair = edict({'uuid':uuid,'config':exp_config})
+        append_new_pair(self.data,self.uuid_file,new_pair)
 
     def append_new(self,new_field,new_data):
         print("WARNING: This feature needs updating.")

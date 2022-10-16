@@ -87,6 +87,9 @@ class ExpCache():
     def get_uuid(self,config):
         return self.uuid_cache.get_uuid(config)
 
+    def add_uuid_config_pair(self,uuid,config):
+        self.uuid_cache.add_uuid_config_pair(uuid,config)
+
     def load_records(self,exps):
         records = []
         for config in tqdm.tqdm(exps):
