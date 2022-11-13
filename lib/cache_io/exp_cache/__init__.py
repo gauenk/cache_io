@@ -214,6 +214,8 @@ class ExpCache():
         if rlen == 1:
             for key,val in record.items():
                 # print(key,type(val),type(val[0]),len(val),val[0].ndim)
+                # if len(val) == 1:
+                #     record[key] = val[0]
                 if val[0].ndim == 0:
                     record[key] = val[0]
 
