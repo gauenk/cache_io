@@ -90,15 +90,16 @@ class ExpCache():
     def add_uuid_config_pair(self,uuid,config):
         self.uuid_cache.add_uuid_config_pair(uuid,config)
 
-    def load_records(self,exps):
-        records = []
-        for config in tqdm.tqdm(exps):
-            results = self.load_exp(config)
-            uuid = self.get_uuid(config)
-            if results is None: continue
-            self.append_to_record(records,uuid,config,results)
-        records = pd.DataFrame(records)
-        return records
+    def load_records(self,exps,save_agg=None,clear=False):
+        return self.load_flat_records(exps,save_agg,clear)
+        # records = []
+        # for config in tqdm.tqdm(exps):
+        #     results = self.load_exp(config)
+        #     uuid = self.get_uuid(config)
+        #     if results is None: continue
+        #     self.append_to_record(records,uuid,config,results)
+        # records = pd.DataFrame(records)
+        # return records
 
     def append_to_record(self,records,uuid,config,results):
         record = {'uuid':uuid}

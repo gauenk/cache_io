@@ -10,6 +10,9 @@ from easydict import EasyDict as edict
 # -- Top Level Function --
 #
 
+def mesh(fields):
+    return mesh_pydicts(fields)
+
 def mesh_pydicts(fields):
 
     # -- split names and lists --
@@ -17,12 +20,37 @@ def mesh_pydicts(fields):
 
     # -- correct the order --
     names = list(names)
-    names.reverse()
     lists = list(lists)
     lists.reverse()
 
     # -- create meshgrid --
     return create_named_meshgrid(lists,names)
+
+def mesh_groups(fields,groups):
+
+    # -- mesh sets of groups --
+    names = OrderedDict()
+    for gid,group_i in enumerate(groups):
+        G = len(group_i[list(group_i.keys())[0]])
+        names["%d" % gid] = [i for i in range(G)]
+    groups_mesh = mesh(names)
+
+    # -- create sets of mesh --
+    _mesh = []
+    for group_nums_d in groups_mesh:
+        group_nums = [group_nums_d[g] for g in names.keys()]
+        for gnum,group in zip(group_nums,groups):
+            # -- set all fields --
+            for field in group:
+                elem = group[field][int(gnum)]
+                elem = elem if isinstance(elem,list) else [elem]
+                fields[field] = elem
+        # -- append --
+        _mesh += mesh(fields)
+    return _mesh
+
+def add_cfg(cfg_list,cfg2append):
+    append_configs(cfg_list,cfg2append)
 
 def append_configs(cfg_list,cfg2append):
     for e,exp in enumerate(cfg_list):
@@ -34,22 +62,23 @@ def append_configs(cfg_list,cfg2append):
 #
 #
 
-def create_named_meshgrid(lists,names):
+def create_named_meshgrid(lists,names,use_pd=False):
     named_mesh = []
-    mesh = create_meshgrid(lists)
+    mesh = create_meshgrid(lists,use_pd)
     for elem in mesh:
+        elem = reversed(elem)
         named_elem = edict(OrderedDict(dict(zip(names,elem))))
         named_mesh.append(named_elem)
     return named_mesh
 
-def create_meshgrid(lists):
+def create_meshgrid(lists,use_pd=True):
     # -- num lists --
     L = len(lists)
 
     # -- tokenize each list --
     codes,uniques = [],[]
     for l in lists:
-        l_codes,l_uniques = pd.factorize(l)
+        l_codes,l_uniques = factorize(l,use_pd)
         codes.append(l_codes)
         uniques.append(l_uniques)
 
@@ -58,7 +87,7 @@ def create_meshgrid(lists):
     int_mesh = [grid.ravel() for grid in lmesh]
 
     # -- convert back to tokens --
-    mesh = [uniques[i][int_mesh[i]] for i in range(L)]
+    mesh = [[uniques[i][j] for j in int_mesh[i]] for i in range(L)]
 
     # -- "transpose" the axis to iter goes across original lists --
     mesh_T = []
@@ -69,9 +98,22 @@ def create_meshgrid(lists):
             elem = mesh[l][m]
             if isinstance(elem,np.int64):
                 elem = int(elem)
+            elif isinstance(elem,np.bool_):
+                elem = bool(elem)
+            elif isinstance(elem,np.float64):
+                elem = float(elem)
             mesh_m.append(elem)
         mesh_T.append(mesh_m)
     return mesh_T
+
+def factorize(l,use_pd=True):
+    if use_pd:
+        codes,uniques = pd.factorize(l)
+    else:
+        codes = list(np.arange(len(l)))
+        uniques = np.array(l)
+        # assert set(l) == set(np.unique(l))
+    return codes,uniques
 
 def apply_mesh_filter(mesh,mfilter,ftype="keep"):
     filtered_mesh = []
