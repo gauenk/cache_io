@@ -7,12 +7,30 @@ from ._write import *
 from ._convert import *
 from ._utils import *
 
-def append_new_pair(data,uuid_file,new_pair):
+def append_new_pair(data,uuid_file,new_pair,overwrite=False):
     existing_uuid = get_uuid_from_config(data,new_pair.config)
     existing_config = get_config_from_uuid(data,new_pair.uuid)
     if existing_uuid == -1 and existing_config == -1:
         data.uuid.append(new_pair.uuid)
         data.config.append(new_pair.config)
+        write_uuid_file(uuid_file,data)
+    elif (overwrite is True) and (existing_uuid == -1): # only uuid new
+        idx = 0
+        for didx,d_config in enumerate(data.config):
+            if compare_config(d_config,new_pair.config):
+                idx = didx
+                break
+        data.uuid[idx] = new_pair.uuid
+        data.config[idx] = new_pair.config
+        write_uuid_file(uuid_file,data)
+    elif (overwrite is True) and (existing_config == -1): # only config new
+        idx = 0
+        for didx,d_uuid in enumerate(data.uuid):
+            if d_uuid == new_pair.uuid:
+                idx = didx
+                break
+        data.uuid[idx] = new_pair.uuid
+        data.config[idx] = new_pair.config
         write_uuid_file(uuid_file,data)
     else:
         if VERBOSE: print("Not appending data to file since data already exists.")
