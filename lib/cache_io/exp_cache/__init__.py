@@ -214,10 +214,13 @@ class ExpCache():
     def squeeze_0dims(self,record,rlen):
         if rlen == 1:
             for key,val in record.items():
+                # print(key)
                 # print(key,type(val),type(val[0]),len(val),val[0].ndim)
                 # if len(val) == 1:
                 #     record[key] = val[0]
-                if val[0].ndim == 0:
+                if val[0] is None:
+                    record[key] = val
+                elif val[0].ndim == 0:
                     record[key] = val[0]
 
     def check_equal_field_len(self,record):
