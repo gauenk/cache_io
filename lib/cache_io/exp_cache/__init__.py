@@ -69,6 +69,13 @@ class ExpCache():
         results = self.read_results(uuid)
         return results
 
+    # def load_exp(self,config):
+    #     uuid = self.get_uuid_from_config(config)
+    #     print(uuid)
+    #     if uuid == -1: return None
+    #     results = self.read_results(uuid)
+    #     return results
+
     def save_exp(self,uuid,config,results,overwrite=False):
         # check_uuid = self.get_uuid_from_config(config)
         # 12/21/21 -- the assert statement is logical error
@@ -248,7 +255,9 @@ class ExpCache():
                 # print(key,type(val),type(val[0]),len(val),val[0].ndim)
                 # if len(val) == 1:
                 #     record[key] = val[0]
-                if val[0].ndim == 0:
+                if val[0] is None:
+                    record[key] = None
+                elif val[0].ndim == 0:
                     record[key] = val[0]
 
     def check_equal_field_len(self,record):
