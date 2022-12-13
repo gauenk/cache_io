@@ -124,7 +124,7 @@ class ExpCache():
             self.save_exp(uuid,config,result,overwrite)
         # print(self.uuid_cache.data.uuid)
 
-    def load_raw(self):
+    def load_raw(self,skip_empty=True):
         uuids = []
         configs = []
         results = []
@@ -132,20 +132,24 @@ class ExpCache():
         for uuid in data.uuid:
             config = self.get_config_from_uuid(uuid)
             result = self.load_exp(config)
+            if (result is None) and skip_empty: continue
             uuids.append(uuid)
             configs.append(config)
             results.append(result)
         return uuids,configs,results
 
-    def load_raw_configs(self,configs):
+    def load_raw_configs(self,in_configs,skip_empty=True):
         uuids = []
         results = []
-        for config in configs:
+        configs = []
+        for config in in_configs:
             uuid = self.get_uuid(config)
             result = self.load_exp(config)
+            if (result is None) and skip_empty: continue
             uuids.append(uuid)
+            configs.append(config)
             results.append(result)
-        return uuids,results
+        return uuids,configs,results
 
     def load_all_records(self):
         records = []
