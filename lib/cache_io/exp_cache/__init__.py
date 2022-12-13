@@ -69,6 +69,13 @@ class ExpCache():
         results = self.read_results(uuid)
         return results
 
+    # def load_exp(self,config):
+    #     uuid = self.get_uuid_from_config(config)
+    #     print(uuid)
+    #     if uuid == -1: return None
+    #     results = self.read_results(uuid)
+    #     return results
+
     def save_exp(self,uuid,config,results,overwrite=False):
         # check_uuid = self.get_uuid_from_config(config)
         # 12/21/21 -- the assert statement is logical error
@@ -108,6 +115,37 @@ class ExpCache():
         for result_id,result in results.items():
             record[result_id] = result
         records.append(record)
+
+    def save_raw(self,uuids,configs,results,overwrite=False):
+        N  = len(uuids)
+        for uuid,config,result in zip(uuids,configs,results):
+            self.uuid_cache.add_uuid(uuid,config,overwrite)
+            config.uuid = uuid
+            self.save_exp(uuid,config,result,overwrite)
+        # print(self.uuid_cache.data.uuid)
+
+    def load_raw(self):
+        uuids = []
+        configs = []
+        results = []
+        data = self.uuid_cache.data
+        for uuid in data.uuid:
+            config = self.get_config_from_uuid(uuid)
+            result = self.load_exp(config)
+            uuids.append(uuid)
+            configs.append(config)
+            results.append(result)
+        return uuids,configs,results
+
+    def load_raw_configs(self,configs):
+        uuids = []
+        results = []
+        for config in configs:
+            uuid = self.get_uuid(config)
+            result = self.load_exp(config)
+            uuids.append(uuid)
+            results.append(result)
+        return uuids,results
 
     def load_all_records(self):
         records = []

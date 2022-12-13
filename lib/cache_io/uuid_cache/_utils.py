@@ -4,6 +4,7 @@ from pathlib import Path
 from ._debug import VERBOSE
 
 def compare_config(existing_config,proposed_config):
+    if isinstance(existing_config,str): return False
     for key,value in existing_config.items():
         if not(key in proposed_config):
             # print("missing key: ",key)

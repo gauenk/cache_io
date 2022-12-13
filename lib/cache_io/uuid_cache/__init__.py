@@ -97,10 +97,13 @@ class UUIDCache():
         return configs
 
     def init_uuid_file(self):
-        if VERBOSE: print(f"Init [{uuid_file}]")
+        if VERBOSE: print(f"Init [{self.uuid_file}]")
         if self.uuid_file.exists(): return None
         data = edict({'uuid':[],'config':[]})
         write_uuid_file(self.uuid_file,data)
+
+    def add_uuid(self,uuid,config,overwrite=False):
+        self.add_uuid_config_pair(uuid,config,overwrite)
 
     def get_uuid(self,exp_config):
         uuid = self.get_uuid_from_config(exp_config)
@@ -112,15 +115,15 @@ class UUIDCache():
             # append_new_pair(self.data,self.uuid_file,new_pair)
             return uuid
         else:
-            if VERBOSE: print(f"Exp Config Already has a UUID {uuid}")
+            if VERBOSE: print(f"Exp Config has a UUID {uuid}")
             return uuid
 
-    def add_uuid_config_pair(self,uuid,exp_config):
+    def add_uuid_config_pair(self,uuid,exp_config,overwrite=False):
         if self.data is None:
             # print("\n"*10 + "init!" + "\n"*10)
             self.init_uuid_file()
         new_pair = edict({'uuid':uuid,'config':exp_config})
-        append_new_pair(self.data,self.uuid_file,new_pair)
+        append_new_pair(self.data,self.uuid_file,new_pair,overwrite)
 
     def append_new(self,new_field,new_data):
         print("WARNING: This feature needs updating.")

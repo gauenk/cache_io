@@ -6,7 +6,7 @@ from pathlib import Path
 from ._debug import VERBOSE
 
 def write_uuid_file(uuid_file,data):
-    if VERBOSE: print(f"Writing: [{cfg.uuid_file}]")
+    if VERBOSE: print(f"Writing: [{uuid_file}]")
     if not uuid_file.parents[0].exists():
         uuid_file.parents[0].mkdir(parents=True)
     data_json = json.dumps(data)
