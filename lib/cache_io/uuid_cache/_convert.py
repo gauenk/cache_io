@@ -17,8 +17,9 @@ def get_uuid_from_config(data,exp_config):
 
     if data is None:
         raise ValueError("[uuid_cache/_convert.py get_uuid_from_config]: Data is None.")
+    verbose = False
     for uuid,config in zip(data.uuid,data.config):
-        match = compare_config(config,exp_config)
+        match = compare_config(config,exp_config,verbose)
         if match: return uuid
     return -1 # no match
 
