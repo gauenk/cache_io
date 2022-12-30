@@ -69,6 +69,12 @@ class ExpCache():
         results = self.read_results(uuid)
         return results
 
+    def load_exps(self,configs=None):
+        if configs is None:
+            return self.load_raw()
+        else:
+            return self.load_raw_configs(configs)
+
     # def load_exp(self,config):
     #     uuid = self.get_uuid_from_config(config)
     #     print(uuid)
@@ -89,7 +95,7 @@ class ExpCache():
             if VERBOSE: print(f"UUID [{uuid}]")
             self.write_results(uuid,results)
         else:
-            print(f"WARNING: Not writing. UUID [{uuid}] exists.")
+            print(f"WARNING: Not writing. UUID [{uuid}] exists @ [{self.root}]")
 
     def get_uuid(self,config):
         return self.uuid_cache.get_uuid(config)
