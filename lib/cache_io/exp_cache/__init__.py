@@ -201,6 +201,7 @@ class ExpCache():
             if results is None: continue
             self.append_to_flat_record(records,uuid,config,results)
         records = pd.concat(records)
+        records.reset_index(inplace=True,drop=True)
 
         # -- [optional] save agg records --
         self._save_agg_records(records,save_agg)
