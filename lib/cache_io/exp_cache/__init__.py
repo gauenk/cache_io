@@ -188,6 +188,9 @@ class ExpCache():
             records.to_pickle(save_agg)
 
     def load_flat_records(self,exps,save_agg=None,clear=False):
+        return self.to_records(exps,save_agg,clear)
+
+    def to_records(self,exps,save_agg=None,clear=False):
         """
         Load records but flatten exp configs against
         experiments. Requires "results" to be have
@@ -214,6 +217,9 @@ class ExpCache():
         return records
 
     def append_to_flat_record(self,records,uuid,config,results):
+        return self.append_record(records,uuid,config,results)
+
+    def append_record(self,records,uuid,config,results):
 
         # -- init --
         record = {}
