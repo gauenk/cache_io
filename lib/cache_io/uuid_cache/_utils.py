@@ -5,13 +5,19 @@ from ._debug import VERBOSE
 
 def compare_config(existing_config,proposed_config,verbose=False):
     if isinstance(existing_config,str): return False
-    for key,value in existing_config.items():
-        if not(key in proposed_config):
+    left_cmp = compare_pair(existing_config,proposed_config,["uuid"])
+    right_cmp = compare_pair(proposed_config,existing_config,["uuid"])
+    pair_cmp = left_cmp and right_cmp
+    return pair_cmp
+
+def compare_pair(cfg_a,cfg_b,skips,verbose=False):
+    for key,value in cfg_a.items():
+        if key in skips: continue
+        if not(key in cfg_b):
             if verbose: print("missing key: ",key)
             return False
-        if t(proposed_config[key]) != t(value):
-            if verbose:
-                print("neq key: ",key,proposed_config[key],value)
+        if cfg_b[key] != value:
+            if verbose: print("neq key: ",key,proposed_config[key],value)
             return False
     return True
 
