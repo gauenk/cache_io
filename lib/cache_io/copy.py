@@ -14,7 +14,6 @@ Copy one cache name to another.
 """
 
 
-
 def exp_cache(src,dest,configs=None,overwrite=False,skip_empty=True):
     """
     src,dest: Two ExpCache files
@@ -24,6 +23,7 @@ def exp_cache(src,dest,configs=None,overwrite=False,skip_empty=True):
     else:
         uuids,configs,results = src.load_raw_configs(configs,skip_empty)
     if len(configs) == 0: warn_message(src)
+    # _dev_test(configs,results)
     dest.save_raw(uuids,configs,results,overwrite)
 
 def warn_message(src):
@@ -32,10 +32,11 @@ def warn_message(src):
     msg += f"Example uuid: [{list(src.uuid_cache.data['uuid'])[0]}]\n"
     print(msg)
 
-#         self.root = root if isinstance(root,Path) else Path(root)
-#         self.tensor_cache = TensorCache(root)
-#         self.uuid_cache = UUIDCache(root,version)
-
-# ExpCache
-#     pass
+# FREELY DELETE ME
+# def _dev_test(configs,res):
+#     import pandas as pd
+#     df = pd.DataFrame(configs)
+#     print(df['wt'].unique())
+#     print(len(df))
+#     print(len(res))
 

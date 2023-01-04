@@ -8,6 +8,7 @@ def compare_config(existing_config,proposed_config,verbose=False):
     left_cmp = compare_pair(existing_config,proposed_config,["uuid"])
     right_cmp = compare_pair(proposed_config,existing_config,["uuid"])
     pair_cmp = left_cmp and right_cmp
+    # pair_cmp = left_cmp
     return pair_cmp
 
 def compare_pair(cfg_a,cfg_b,skips,verbose=False):
