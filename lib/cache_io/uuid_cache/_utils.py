@@ -14,6 +14,7 @@ def compare_config(existing_config,proposed_config,verbose=False):
     pair_cmp = left_cmp and right_cmp
     # if _dev_cmp(existing_config):
     #     print(left_cmp,right_cmp,pair_cmp)
+    # pair_cmp = left_cmp
     return pair_cmp
 
 # -> FREELY DELETE ME. <-
