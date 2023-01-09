@@ -17,3 +17,7 @@ def strings2bools(exps):
     for exp in exps:
         exp_strings2bools(exps)
 
+def optional(pydict,field,default):
+    if pydict is None: return default
+    if not(field in pydict): return default
+    else: return pydict[field]
