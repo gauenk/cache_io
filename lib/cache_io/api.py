@@ -37,6 +37,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
     # -- load list of exps --
     exps = get_exps(exp_file_or_list)
     if not(einds is None): exps = [exps[i] for i in einds]
+    print(len(exps),type(exps[0]))
 
     # -- run exps --
     nexps = len(exps)
@@ -97,7 +98,7 @@ def get_exps(exp_file_or_list):
         else: # list of config files
             exps = []
             for fn in exp_file_or_list:
-                exps.append(load(fn))
+                exps.extend(load(fn))
     else: # single list of config files
         exps = load(exp_file_or_list)
     return exps

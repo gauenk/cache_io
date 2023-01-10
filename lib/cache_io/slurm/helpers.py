@@ -77,26 +77,26 @@ def get_fixed_args(args):
         slurm_args[sbatch_key] = args[args_key]
     return slurm_args
 
-def run_launch_files(files):
+def run_launch_files(files,out_files):
     slurm_ids = []
-    for fn in zip(files):
+    for fn,out_file in zip(files,out_files):
         args = ["sbatch",fn]
         proc = subprocess.run(args, capture_output=True, text=True)
         slurm_info = proc.stdout
-        slurm_id = slurm_info.split(" ")[-1]
-        print("Slurm ID: %s" % slurm_id)
+        slurm_id = slurm_info.split(" ")[-1].strip()
+        print("Slurm ID: %s\nOutput: %s" % (slurm_id,out_file))
         slurm_ids.append(slurm_id)
-        time.sleep(2) # don't overwrite the cache of the launched subprocess
+        time.sleep(4) # don't overwrite the cache of the launched subprocess
     return slurm_ids
 
-def save_launch_info(base,name,ids,out_files):
+def save_launch_info(base,name,ids,files):
     fn = base / ("%s.txt" % name)
-    info = ["ids":ids,"files":files]
+    info = {"ids":ids,"files":files}
     df = pd.DataFrame(info)
-    print(df)
-    df.to_csv(fn,index=False)
+    print("Info available at %s" % fn)
+    df.to_csv(fn,index=False,sep=" ")
 
-def create_paths(base):
+def create_paths(base,reset):
     output_dir = base / "output"
     launch_dir = base / "launching"
     info_dir = base / "info"
@@ -108,7 +108,7 @@ def create_paths(base):
         info_dir.mkdir(parents=True)
 
     # -- reset dirs --
-    if args.reset:
+    if reset:
         remove_files(output_dir)
         remove_files(launch_dir)
         remove_files(info_dir)

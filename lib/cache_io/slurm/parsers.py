@@ -13,6 +13,7 @@ def process_parser():
     parser.add_argument('--start',type=int)
     parser.add_argument('--end',type=int)
     parser.add_argument('--clear',action="store_true")
+    parser.add_argument('--launched_with_slurm',action="store_true")
     args = parser.parse_args()
     return args
 
@@ -26,7 +27,8 @@ def launcher_parser():
     parser.add_argument('total_exps',type=int)
     parser.add_argument('chunk_size',type=int)
     parser.add_argument('-J','--job_name_base',default=None)
-    parser.add_argument('-c','--clear_first',action="store_true")
+    parser.add_argument('-c','--clear_first',action="store_true",
+                        help="Clears the cache only for the first experiment.")
     parser.add_argument('-A','--account',default="standby")
     parser.add_argument('-M','--machines',nargs='+',default=["b","d"])
     parser.add_argument('-n','--nodes',default=1)
