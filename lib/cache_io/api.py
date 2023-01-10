@@ -13,6 +13,9 @@ from .exps import read,load
 from .misc import optional
 from .exp_cache import ExpCache
 
+# -- dispatch options --
+from . import slurm 
+
 # -- mangling --
 from pathlib import Path
 from easydict import EasyDict as edict
@@ -20,7 +23,12 @@ from easydict import EasyDict as edict
 
 def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
              records_fn=None,records_reload=True,skip_loop=False,verbose=True,
-             einds=None,clear=False):
+             einds=None,clear=False,enable_dispatch=None):
+
+    # -- optionally restrict inds using an input parser --
+    if not(enable_dispatch is None):
+        assert (einds is None),"Indices are selected from dispatch"
+        einds,clear = dispatch(enable_dispatch,einds,clear)
 
     # -- open cache --
     cache = open_cache(exp_file_or_list,name=name,version=version)
@@ -93,3 +101,12 @@ def get_exps(exp_file_or_list):
     else: # single list of config files
         exps = load(exp_file_or_list)
     return exps
+
+def dispatch(enable_dispatch,*args):
+    if enable_dispatch == "slurm":
+        einds,clear = slurm.run_process(*args)
+    elif enable_dispatch == "spli":
+        einds,clear = split.run_process(*args)
+    else:
+        raise ValueError("Uknown dispatch type [%s]" % enable_dispatch)
+    return einds,clear

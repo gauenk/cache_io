@@ -30,6 +30,7 @@ setup(
     package_dir={"": "lib"},
     packages=find_packages(""),
     entry_points = {
-        'console_scripts': ['lsc=cache_io.lsc:main'],
+        'console_scripts': ['lsc=cache_io.lsc:main',
+                            'sbatch_py=dev_basics.slurm.cmdline:main'],
     }
 )
