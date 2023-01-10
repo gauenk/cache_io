@@ -13,12 +13,20 @@ from .exps import read,get_exps
 from .misc import optional
 from .exp_cache import ExpCache
 
+# -- dispatch options --
+from . import slurm
+
 # -- mangling --
 from pathlib import Path
 
 def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
              records_fn=None,records_reload=True,skip_loop=False,verbose=True,
-             einds=None,clear=False):
+             einds=None,clear=False,enable_dispatch=None):
+
+    # -- optionally restrict inds using an input parser --
+    if not(enable_dispatch is None):
+        assert (einds is None),"Indices are selected from dispatch"
+        einds,clear,name = dispatch(enable_dispatch,einds,clear,name)
 
     # -- open cache --
     cache = open_cache(exp_file_or_list,name=name,version=version)
@@ -27,6 +35,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
     # -- load list of exps --
     exps = get_exps(exp_file_or_list)
     if not(einds is None): exps = [exps[i] for i in einds]
+    print(len(exps),type(exps[0]))
 
     # -- run exps --
     nexps = len(exps)

@@ -9,10 +9,10 @@ def read_uuid_file(uuid_file):
     if VERBOSE: print(f"Reading: [{uuid_file}]")
     if not uuid_file.exists(): return None
     try:
-        with open(uuid_file,'r') as f:
+        with open(uuid_file.resolve(),'r') as f:
             data_json = f.read()
         data = edict(json.loads(data_json))
-    except:
+    except Exception as e:
         raise ValueError(f"Can't open uuid_file [{str(uuid_file)}]")
     return data
 
