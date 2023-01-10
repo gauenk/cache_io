@@ -76,7 +76,7 @@ def run_process(einds,clear,name,version,exps):
     einds = [i for i in range(args.start,args.end)]
     clear = args.clear
     if not(args.name is None):
-        name = args.name
+        name = ".cache_io/%s" % (args.name)
     return einds,clear,name
 
 def merge(name,version,exps,overwrite=False,skip_empty=True):
@@ -139,7 +139,7 @@ def merge(name,version,exps,overwrite=False,skip_empty=True):
     base /= args.job_name_base
     output_dir,launch_dir,info_dir = create_paths(base,False)
     proc_args = get_process_args(args)
-    names = [p.name for p in proc_args]
+    names = [".cache_io/%s" % p.name for p in proc_args]
     
     # -- copy each name --
     cache = ExpCache(name,version)

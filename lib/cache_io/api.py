@@ -91,7 +91,7 @@ def cache_info(exp_file,name=None,version=None):
 def dispatch(enable_dispatch,*args):
     if enable_dispatch == "slurm":
         outs = slurm.dispatch_process(*args)
-    elif enable_dispatch == "spli":
+    elif enable_dispatch == "split":
         outs = split.dispatch_process(*args)
     else:
         raise ValueError("Uknown dispatch type [%s]" % enable_dispatch)
