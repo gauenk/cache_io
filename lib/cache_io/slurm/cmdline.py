@@ -12,7 +12,7 @@ from pathlib import Path
 from .api import run_launcher
 
 def main():
-    base = Path(os.getcwd()).resolve() / "slurm"
+    base = Path(os.getcwd()).resolve() / "dispatch"
     run_launcher(base)
 
 if __name__ == "__main__":
