@@ -50,7 +50,7 @@ def get_process_args(args):
 
     # -- chunking exps --
     pargs = []
-    for start in range(0,args.total_exps,args.chunk_size):
+    for start in range(args.exp_start,args.total_exps,args.chunk_size):
         end = min(start+args.chunk_size,args.total_exps)
         pargs_i = edict()
         pargs_i.start = start

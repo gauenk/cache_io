@@ -15,8 +15,10 @@ def process_parser():
         prog = 'Parser which equips a script to be run by with the Python Slurm laucher',
         description = desc,
         epilog = 'Happy Hacking')
-    parser.add_argument('--start',type=int,default=-1)
-    parser.add_argument('--end',type=int,default=-1)
+    parser.add_argument('--start',type=int,default=-1,
+                        help="Starting Experiment Index")
+    parser.add_argument('--end',type=int,default=-1,
+                        help="Ending Experiment Index")
     parser.add_argument('--clear',action="store_true")
     parser.add_argument('--launched_with_slurm',action="store_true")
     parser.add_argument('--name',type=str,default=None)
@@ -29,9 +31,15 @@ def launcher_parser():
         prog = 'Launching Dispatched Experiments with Slurm',
         description = desc,
         epilog = 'Happy Hacking')
-    parser.add_argument('script',type=str)
-    parser.add_argument('total_exps',type=int)
-    parser.add_argument('chunk_size',type=int,default=1)
+    
+    parser.add_argument('script',type=str,
+                        help="The path of a Python script equipped with dispatch mode.")
+    parser.add_argument('total_exps',type=int,
+                        help="The total number of experiments")
+    parser.add_argument('chunk_size',type=int,default=1,
+                        help="Number of Experiments per Process")
+    parser.add_argument('--exp_start',default=0,
+                        help="Experiment Index to Start On.")
     parser.add_argument('-UN','--unique_names',action="store_true",
                         help="Each dispatched file is assigned a unique cache name. This removes the read/write race condition among the concurrent processes for a single cache, but requires merging caches after the experiments.")
     parser.add_argument('-J','--job_name_base',default=None)
