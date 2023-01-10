@@ -14,7 +14,7 @@ from .misc import optional
 from .exp_cache import ExpCache
 
 # -- dispatch options --
-from . import slurm 
+from . import slurm
 
 def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
              records_fn=None,records_reload=True,skip_loop=False,verbose=True,

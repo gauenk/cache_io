@@ -11,20 +11,36 @@ Copy one cache name to another.
     cache_io.copy.exp_cache(cache1,cache,exps)
     # copy from "cache1" to "cache"
 
+
+    OR
+
+
+    exps = get_list_of_experiments()
+    cache_io.copy.enames("a","a","b","b",exps)
 """
 
+from .exp_cache import ExpCache
+from .exps import get_exps
 
-def exp_cache(src,dest,configs=None,overwrite=False,skip_empty=True):
+def enames(name0,version0,name1,version1,exps=None,
+           overwrite=False,skip_empty=True):
+    src = ExpCache(name0,version0)
+    dest = ExpCache(name1,version1)
+    exp_cache(src,dest,exps,overwrite,skip_empty)
+
+def exp_cache(src,dest,exps=None,overwrite=False,skip_empty=True):
     """
     src,dest: Two ExpCache files
     """
-    if configs is None:
-        uuids,configs,results = src.load_raw(skip_empty)
+    if exps is None:
+        uuids,exps,results = src.load_raw(skip_empty)
     else:
-        uuids,configs,results = src.load_raw_configs(configs,skip_empty)
-    if len(configs) == 0: warn_message(src)
-    # _dev_test(configs,results)
-    dest.save_raw(uuids,configs,results,overwrite)
+        if not(exps is None):
+            exps = get_exps(exps)
+        uuids,exps,results = src.load_raw_exps(exps,skip_empty)
+    if len(exps) == 0: warn_message(src)
+    # _dev_test(exps,results)
+    dest.save_raw(uuids,exps,results,overwrite)
 
 def warn_message(src):
     msg = "No source data found.\n"
@@ -33,9 +49,9 @@ def warn_message(src):
     print(msg)
 
 # FREELY DELETE ME
-# def _dev_test(configs,res):
+# def _dev_test(exps,res):
 #     import pandas as pd
-#     df = pd.DataFrame(configs)
+#     df = pd.DataFrame(exps)
 #     print(df['wt'].unique())
 #     print(len(df))
 #     print(len(res))

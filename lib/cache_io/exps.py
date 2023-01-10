@@ -30,7 +30,7 @@ def unpack(edata):
 def get_exps(exp_file_or_list):
     islist = isinstance(exp_file_or_list,list)
     ispath = isinstance(exp_file_or_list,edict)
-    if isinstance(exp_file_or_list,list):
+    if islist:
         isdict = isinstance(exp_file_or_list[0],edict)
         isdict = isdict or isinstance(exp_file_or_list[0],dict)
         if isdict:
