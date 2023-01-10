@@ -5,31 +5,29 @@ from ._debug import VERBOSE
 
 def compare_config(existing_config,proposed_config,verbose=False):
     if isinstance(existing_config,str): return False
-    # if _dev_cmp(existing_config):
-    #     print("-"*10)
-    #     print(proposed_config)
-    #     print(existing_config)
-    left_cmp = compare_pair(existing_config,proposed_config,["uuid"])
-    right_cmp = compare_pair(proposed_config,existing_config,["uuid"])
+    dev_check = False
+    if dev_check and _dev_cmp(existing_config):
+        print("-"*10)
+        print(proposed_config)
+        print(existing_config)
+        verbose = True
+    left_cmp = compare_pair(existing_config,proposed_config,["uuid"],verbose)
+    right_cmp = compare_pair(proposed_config,existing_config,["uuid"],verbose)
     pair_cmp = left_cmp and right_cmp
-    # if _dev_cmp(existing_config):
-    #     print(left_cmp,right_cmp,pair_cmp)
-    # pair_cmp = left_cmp
+    if dev_check and _dev_cmp(existing_config):
+        print(left_cmp,right_cmp,pair_cmp)
     return pair_cmp
 
 # -> FREELY DELETE ME. <-
 def _dev_cmp(cfg):
     match = True
-    fields = {"arch_name":"lidia","vid_name":"sunflower",
-              "temporal_chunk_size":0,"temporal_chunk_overlap":0.0}
+    fields = {"arch_name":"n3net","vid_name":"sunflower","ws":15,"wt":0}
     for field in fields:
         if not(cfg[field] == fields[field]):
             match = False
             break
-    if "spatial_chunk_overlap" in cfg:
-        match = False
     return match
-            
+
 def compare_pair(cfg_a,cfg_b,skips,verbose=False):
     for key,value in cfg_a.items():
         if key in skips: continue
@@ -37,7 +35,7 @@ def compare_pair(cfg_a,cfg_b,skips,verbose=False):
             if verbose: print("missing key: ",key)
             return False
         if cfg_b[key] != value:
-            if verbose: print("neq key: ",key,proposed_config[key],value)
+            if verbose: print("neq key: ",key,value,cfg_b[key])
             return False
     return True
 

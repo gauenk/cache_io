@@ -9,14 +9,12 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 # -- cache api --
-from .exps import read,load
+from .exps import read,get_exps
 from .misc import optional
 from .exp_cache import ExpCache
 
 # -- mangling --
 from pathlib import Path
-from easydict import EasyDict as edict
-
 
 def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
              records_fn=None,records_reload=True,skip_loop=False,verbose=True,
@@ -78,18 +76,3 @@ def open_cache(exp_file,name=None,version=None):
     cache = ExpCache(name,version)
     return cache
 
-def get_exps(exp_file_or_list):
-    islist = isinstance(exp_file_or_list,list)
-    ispath = isinstance(exp_file_or_list,edict)
-    if isinstance(exp_file_or_list,list):
-        isdict = isinstance(exp_file_or_list[0],edict)
-        isdict = isdict or isinstance(exp_file_or_list[0],dict)
-        if isdict:
-            exps = exp_file_or_list
-        else: # list of config files
-            exps = []
-            for fn in exp_file_or_list:
-                exps.append(load(fn))
-    else: # single list of config files
-        exps = load(exp_file_or_list)
-    return exps

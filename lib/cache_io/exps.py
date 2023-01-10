@@ -5,6 +5,7 @@ Manage experiment files
 """
 
 import yaml
+from easydict import EasyDict as edict
 from .mesh import mesh_groups,add_cfg
 
 def load(fn): # read + unpack
@@ -24,5 +25,21 @@ def unpack(edata):
     for grid in grids:
         exps += mesh_groups(grid,groups)
     add_cfg(exps,cfg)
+    return exps
+
+def get_exps(exp_file_or_list):
+    islist = isinstance(exp_file_or_list,list)
+    ispath = isinstance(exp_file_or_list,edict)
+    if islist:
+        isdict = isinstance(exp_file_or_list[0],edict)
+        isdict = isdict or isinstance(exp_file_or_list[0],dict)
+        if isdict:
+            exps = exp_file_or_list
+        else: # list of config files
+            exps = []
+            for fn in exp_file_or_list:
+                exps.extend(load(fn))
+    else: # single list of config files
+        exps = load(exp_file_or_list)
     return exps
 

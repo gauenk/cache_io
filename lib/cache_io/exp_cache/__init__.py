@@ -69,11 +69,11 @@ class ExpCache():
         results = self.read_results(uuid)
         return results
 
-    def load_exps(self,configs=None):
+    def load_exps(self,configs=None,skip_empty=False):
         if configs is None:
             return self.load_raw()
         else:
-            return self.load_raw_configs(configs)
+            return self.load_raw_exps(configs,skip_empty=skip_empty)
 
     # def load_exp(self,config):
     #     uuid = self.get_uuid_from_config(config)
@@ -146,6 +146,9 @@ class ExpCache():
         return uuids,configs,results
 
     def load_raw_configs(self,in_configs,skip_empty=True):
+        return self.load_raw_exps(in_configs,skip_empty)
+
+    def load_raw_exps(self,in_configs,skip_empty=True):
         uuids = []
         results = []
         configs = []
