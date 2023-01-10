@@ -31,14 +31,16 @@ def run_launcher(base):
     slurm_ids = run_launch_files(files,out_fns)
 
     # -- save launch info --
-    save_launch_info(info_dir,args.job_name_base,slurm_ids,out_fns)
+    save_launch_info(info_dir,args.job_name_base,slurm_ids,out_fns,proc_args)
 
-def run_process(einds,clear):
+def run_process(einds,clear,name):
     args = process_parser()
     print("[Process] Running: ",args)
     if args.launched_with_slurm is False:
-        return einds,clear
+        return einds,clear,name
     einds = [i for i in range(args.start,args.end)]
     clear = args.clear
-    return einds,clear
+    if not(args.name is None):
+        name = args.name
+    return einds,clear,name
 

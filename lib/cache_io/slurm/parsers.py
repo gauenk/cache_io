@@ -14,6 +14,7 @@ def process_parser():
     parser.add_argument('--end',type=int)
     parser.add_argument('--clear',action="store_true")
     parser.add_argument('--launched_with_slurm',action="store_true")
+    parser.add_argument('--name',type=str)
     args = parser.parse_args()
     return args
 
@@ -26,6 +27,8 @@ def launcher_parser():
     parser.add_argument('script')
     parser.add_argument('total_exps',type=int)
     parser.add_argument('chunk_size',type=int)
+    parser.add_argument('-UN','--unique_names',action="store_true",
+                        help="Each dispatched file is assigned a unique cache name. This removes the read/write race condition among the concurrent processes for a single cache, but requires merging caches after the experiments.")
     parser.add_argument('-J','--job_name_base',default=None)
     parser.add_argument('-c','--clear_first',action="store_true",
                         help="Clears the cache only for the first experiment.")

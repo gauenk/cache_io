@@ -28,7 +28,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
     # -- optionally restrict inds using an input parser --
     if not(enable_dispatch is None):
         assert (einds is None),"Indices are selected from dispatch"
-        einds,clear = dispatch(enable_dispatch,einds,clear)
+        einds,clear,name = dispatch(enable_dispatch,einds,clear,name)
 
     # -- open cache --
     cache = open_cache(exp_file_or_list,name=name,version=version)
@@ -105,9 +105,9 @@ def get_exps(exp_file_or_list):
 
 def dispatch(enable_dispatch,*args):
     if enable_dispatch == "slurm":
-        einds,clear = slurm.run_process(*args)
+        outs = slurm.run_process(*args)
     elif enable_dispatch == "spli":
-        einds,clear = split.run_process(*args)
+        outs = split.run_process(*args)
     else:
         raise ValueError("Uknown dispatch type [%s]" % enable_dispatch)
-    return einds,clear
+    return outs

@@ -33,6 +33,7 @@ def create_launch_msg(pargs,fixed_args,uuid_s,output_dir):
     for sbatch_key,sbatch_val in fixed_args.items():
         msg += "#SBATCH %s %s\n" % (sbatch_key,sbatch_val)
     msg += "#SBATCH -C %s\n" % (pargs.machine)
+    msg += "#SBATCH --job-name %s\n" % (pargs.name)
     output_fn =  str(output_dir / ("%s_%d_%d_log.txt" % (uuid_s,pargs.start,pargs.end)))
     msg += "#SBATCH --output %s\n" % (output_fn)
     msg += "\n\n/bin/hostname\n\n"
@@ -40,6 +41,8 @@ def create_launch_msg(pargs,fixed_args,uuid_s,output_dir):
     msg += "/home/gauenk/.localpython/bin/python3.8 -u %s --start %d --end %d --launched_with_slurm" % (pargs.script,pargs.start,pargs.end)
     if pargs.clear is True:
         msg += " --clear"
+    if not(pargs.name is None):
+        msg += " --name %s" % (pargs.name)
     msg += "\n"
     return msg,output_fn
 
@@ -54,8 +57,11 @@ def get_process_args(args):
         pargs_i.end = end
         pargs_i.script = args.script
         pargs_i.clear = False
+        pargs_i.name = None
         if start == 0 and args.clear_first is True:
             pargs_i.clear = True
+        if args.unique_names is True:
+            pargs_i.name =  "%s_dispatch_%d" % (args.job_name_base,start)
         pargs.append(pargs_i)
 
     # -- assigning machines --
@@ -66,6 +72,7 @@ def get_process_args(args):
     for p in range(nprocs):
         pargs[p].machine = args.machines[m]
         m = (m+1) % nmachines
+
     return pargs
 
 def get_fixed_args(args):
@@ -89,9 +96,10 @@ def run_launch_files(files,out_files):
         time.sleep(4) # don't overwrite the cache of the launched subprocess
     return slurm_ids
 
-def save_launch_info(base,name,ids,files):
+def save_launch_info(base,name,ids,files,pargs):
+    names = [p.name for p in pargs]
     fn = base / ("%s.txt" % name)
-    info = {"ids":ids,"files":files}
+    info = {"id":ids,"file":files,"name":names}
     df = pd.DataFrame(info)
     print("Info available at %s" % fn)
     df.to_csv(fn,index=False,sep=" ")
