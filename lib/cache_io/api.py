@@ -29,8 +29,8 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
     # -- optionally restrict inds using an input parser --
     if not(enable_dispatch is None):
         assert (einds is None),"Indices are selected from dispatch"
-        einds,clear,name = dispatch(enable_dispatch,merge_dispatch,
-                                    einds,clear,name,version,exps)
+        args = [merge_dispatch,einds,clear,name,version,skip_loop,exps]
+        einds,clear,name,skip_loop = dispatch(enable_dispatch,*args)
 
     # -- open & clear cache --
     cache = ExpCache(name,version)

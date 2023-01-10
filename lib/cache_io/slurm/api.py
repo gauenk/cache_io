@@ -10,7 +10,7 @@ from pathlib import Path
 from ..exp_cache import ExpCache
 from ..copy import exp_cache as exp_cache_copy
 
-from .parsers import launcher_parser,process_parser
+from .parsers import launcher_parser,process_parser,script_parser
 from .helpers import create_paths
 from .helpers import get_process_args,get_fixed_args
 from .helpers import create_launch_files,run_launch_files
@@ -23,6 +23,12 @@ def run_launcher(base):
     ```
     sbatch_py <script_name.py> <num_of_experiments> <experiments_per_proc>
     ```    
+
+    This function is called by the "sbatch_py" script [aka cmdline.py].
+
+    Functionally, it creates a list of shell files formatted per the parse arguemnts.
+    Then it executes each of them with the sbatch command.
+
     """
 
     # -- create user args --
@@ -44,12 +50,15 @@ def run_launcher(base):
     # -- save launch info --
     save_launch_info(info_dir,uuid_s,args.job_name_base,slurm_ids,out_fns,proc_args)
 
-def dispatch_process(merge_flag,einds,clear,name,version,exps):
-    if merge_flag:
-        merge(name,version,exps)
-        return einds,clear,name
-    else:
-        return run_process(einds,clear,name,version,exps)
+def dispatch_process(merge_flag,einds,clear,name,version,skip_loop,exps):
+    # if we merge, we don't run the process
+    script_args = script_parser()
+    if merge_flag or script_args.merge:
+        merge(script_args,name,version,exps)
+        skip_loop = script_args.skip_loop # possibly False if merging
+    elif args.launched_with_slurm is True:
+        einds,clear,name = run_process(einds,clear,name,version,exps)
+    return einds,clear,name,skip_loop
 
 def run_process(einds,clear,name,version,exps):
     """
@@ -68,33 +77,18 @@ def run_process(einds,clear,name,version,exps):
     <script_name.py> <num_of_experiments> <experiments_per_proc>
     ```    
     """
-
-    args = process_parser()
     print("[Process] Running: ",args)
-    if args.launched_with_slurm is False:
-        return einds,clear,name
+    args = process_parser()
     einds = [i for i in range(args.start,args.end)]
     clear = args.clear
     if not(args.name is None):
         name = ".cache_io/%s" % (args.name)
-    return einds,clear,name
+    return einds,clear,name,skip_loop
 
-def merge(name,version,exps,overwrite=False,skip_empty=True):
+def merge(script_args,name,version,exps):
     """
-    Parses arguments for the "<script_name.py>" script, _always_.
-    Should be used only for a single process and running the script directly.
 
-    The "merge" parameter indicates if launched with dispatch or not.
-
-    _without_ merge:
-    ```
-    sbatch_py <script_name.py> <num_of_experiments> <experiments_per_proc>
-    ```    
-
-    _with_ merge
-    ```
-    <script_name.py> <num_of_experiments> <experiments_per_proc>
-    ```    
+    Merges the ExpCaches created when dispatches the launched parameters.
 
     -=-=-=-=-=-=- Standard Example -=-=-=-=-=-=-=-=-
 
@@ -104,17 +98,13 @@ def merge(name,version,exps,overwrite=False,skip_empty=True):
     sbatch_py <script_name.py> <num_of_experiments> <experiments_per_proc> -UN
     ```    
 
-    B. Merge the outputs to the original cache. Note, enable_dispatch must not change!
+    B. Merge the outputs to the original cache.
 
-    (i) Edit the file so `merge_dispatch = True`
-
-    (ii) Launch the script with `python` using the `sbatch_py` arguments
+    Launch the script with `python` using the `sbatch_py` arguments
     ```
-    python <script_name.py> <script_name.py> <num_of_experiments> <experiments_per_proc>
+    python <script_name.py> <script_name.py> <num_of_experiments> \
+           <experiments_per_proc> -UN --merge
     ```
-
-    (iii) Edit the file so `merge_dispatch = False`.
-
 
     C. Rerun as normal. Any `enable_dispatch` is allowed.
 
@@ -124,9 +114,12 @@ def merge(name,version,exps,overwrite=False,skip_empty=True):
 
     """
 
+    # -- unpack merge args --
+    print("Merging.")
+    overwrite = script_args.merge_overwrite
+    skip_empty = script_args.merge_skip_empty
 
     # -- get original names --
-    print("Mering.")
     args = launcher_parser()
     base = Path(os.getcwd()).resolve() / "dispatch"
     print("[Merge] Running: ",args)

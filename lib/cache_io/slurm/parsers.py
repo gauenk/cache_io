@@ -10,7 +10,7 @@ from pathlib import Path
 from easydict import EasyDict as edict
 
 def process_parser():
-    desc = 'This will equip the script to accept input args to launch slum programs',
+    desc = 'This will equip the script to accept input args to launch slum programs'
     parser = argparse.ArgumentParser(
         prog = 'Parser which equips a script to be run by with the Python Slurm laucher',
         description = desc,
@@ -20,18 +20,16 @@ def process_parser():
     parser.add_argument('--end',type=int,default=-1,
                         help="Ending Experiment Index")
     parser.add_argument('--clear',action="store_true")
-    parser.add_argument('--launched_with_slurm',action="store_true")
     parser.add_argument('--name',type=str,default=None)
-    args = parser.parse_args()
+    args = parser.parse_known_args()[0]
     return edict(vars(args))
 
 def launcher_parser():
-    desc = "Launches python scripts equipped with 'slurm_parser' to accept arguments",
+    desc = "Launches python scripts equipped with 'slurm_parser' to accept arguments"
     parser = argparse.ArgumentParser(
         prog = 'Launching Dispatched Experiments with Slurm',
         description = desc,
         epilog = 'Happy Hacking')
-    
     parser.add_argument('script',type=str,
                         help="The path of a Python script equipped with dispatch mode.")
     parser.add_argument('total_exps',type=int,
@@ -62,7 +60,7 @@ def launcher_parser():
                         help="Input when merging caches.")
 
     # -- parse --
-    args = parser.parse_args()
+    args = parser.parse_known_args()[0]
 
     # -- fill default job name --
     if args.job_name_base is None:
@@ -72,3 +70,27 @@ def launcher_parser():
     return args
 
 
+def script_parser():
+
+    # -- merging --
+    desc = 'This parser _always_ runs when enable_dispatch="slum". '
+    desc += 'Determines the scripts function: [mering,processing, or launching]'
+    parser = argparse.ArgumentParser(
+        prog = 'Parser which equips a script to be run by with the Python Slurm laucher',
+        description = desc,
+        epilog = 'Happy Hacking')
+
+    # -- merging --
+    parser.add_argument('--merge',action="store_true",
+                        help="Allowing merging of uniquely named cache_io Exp Caches.")
+    parser.add_argument('--merge_skip_empty',action="store_false",
+                        help="Input when merging caches.")
+    parser.add_argument('--merge_overwrite',action="store_true",
+                        help="Input when merging caches.")
+    parser.add_argument('--launched_with_slurm',action="store_true")
+
+    # -- parse --
+    args = parser.parse_known_args()[0]
+    args = edict(vars(args))
+    return args
+    
