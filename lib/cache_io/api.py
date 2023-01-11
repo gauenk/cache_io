@@ -38,7 +38,6 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
 
     # -- filter experiments --
     if not(einds is None): exps = [exps[i] for i in einds]
-    print(len(exps),type(exps[0]))
 
     # -- run exps --
     nexps = len(exps)
