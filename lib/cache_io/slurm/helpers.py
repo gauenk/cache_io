@@ -4,6 +4,9 @@ import os,uuid,subprocess,time
 from easydict import EasyDict as edict
 import pandas as pd
 
+# -- json --
+import json
+
 # -- io --
 from pathlib import Path
 
@@ -127,3 +130,11 @@ def create_paths(base,reset):
         remove_files(info_dir)
 
     return output_dir,launch_dir,info_dir
+
+def save_json(fn,pyobj):
+    # Serializing json
+    json_object = json.dumps(pyobj, indent=4)
+    # Writing to sample.json
+    with open(fn, "w") as outfile:
+        outfile.write(json_object)
+

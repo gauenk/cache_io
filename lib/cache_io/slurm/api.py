@@ -14,7 +14,7 @@ from .parsers import launcher_parser,process_parser,script_parser
 from .helpers import create_paths
 from .helpers import get_process_args,get_fixed_args
 from .helpers import create_launch_files,run_launch_files
-from .helpers import save_launch_info
+from .helpers import save_launch_info,save_json
 
 def run_launcher(base):
     """
@@ -49,6 +49,7 @@ def run_launcher(base):
 
     # -- save launch info --
     save_launch_info(info_dir,uuid_s,args.job_name_base,slurm_ids,out_fns,proc_args)
+    save_json(info_dir/("%s_args.json"%uuid_s),args)
 
 def dispatch_process(merge_flag,einds,clear,name,version,skip_loop,exps):
     # if we merge, we don't run the process
@@ -56,7 +57,7 @@ def dispatch_process(merge_flag,einds,clear,name,version,skip_loop,exps):
     if merge_flag or script_args.merge:
         merge(script_args,name,version,exps)
         skip_loop = script_args.skip_loop # possibly False if merging
-    elif args.launched_with_slurm is True:
+    elif script_args.launched_with_slurm is True:
         einds,clear,name = run_process(einds,clear,name,version,exps)
     return einds,clear,name,skip_loop
 
@@ -77,13 +78,13 @@ def run_process(einds,clear,name,version,exps):
     <script_name.py> <num_of_experiments> <experiments_per_proc>
     ```    
     """
-    print("[Process] Running: ",args)
     args = process_parser()
+    print("[Process] Running: ",args)
     einds = [i for i in range(args.start,args.end)]
     clear = args.clear
     if not(args.name is None):
         name = ".cache_io/%s" % (args.name)
-    return einds,clear,name,skip_loop
+    return einds,clear,name
 
 def merge(script_args,name,version,exps):
     """
@@ -101,6 +102,7 @@ def merge(script_args,name,version,exps):
     B. Merge the outputs to the original cache.
 
     Launch the script with `python` using the `sbatch_py` arguments
+
     ```
     python <script_name.py> <script_name.py> <num_of_experiments> \
            <experiments_per_proc> -UN --merge
