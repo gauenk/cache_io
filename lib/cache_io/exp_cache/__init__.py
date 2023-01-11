@@ -177,6 +177,10 @@ class ExpCache():
         records = None
         if not(save_agg is None):
             save_agg = Path(save_agg)
+            pdir = save_agg.parents[0]
+            if not(pdir.exists()):
+                print("Creating Aggregation Cache Path: %s" % str(pdir))
+                pdir.mkdir()
             if save_agg.exists() and clear is False:
                 records = pd.read_pickle(str(save_agg))
             elif save_agg.exists() and clear is True:

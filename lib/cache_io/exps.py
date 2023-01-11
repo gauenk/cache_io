@@ -18,14 +18,18 @@ def read(fn):
     return data
 
 def unpack(edata):
-    cfg = edata['cfg']
+    cfg = edict(edata['cfg'])
     groups = [v for g,v in edata.items() if "group" in g]
     grids = [v for g,v in edata.items() if "global_grids" in g]
     exps = []
     for grid in grids:
         exps += mesh_groups(grid,groups)
-    add_cfg(exps,cfg)
+    if len(exps) == 0: exps = [cfg]
+    else: add_cfg(exps,cfg)
     return exps
+
+def get_exp_list(exp_file_or_list):
+    return get_exps(exp_file_or_list)
 
 def get_exps(exp_file_or_list):
     islist = isinstance(exp_file_or_list,list)
