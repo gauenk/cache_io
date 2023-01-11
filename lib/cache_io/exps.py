@@ -46,4 +46,3 @@ def get_exps(exp_file_or_list):
     else: # single list of config files
         exps = load(exp_file_or_list)
     return exps
-

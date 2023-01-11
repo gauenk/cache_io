@@ -16,24 +16,27 @@ from .exp_cache import ExpCache
 # -- dispatch options --
 from . import slurm
 
-# -- mangling --
-from pathlib import Path
-
 def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
              records_fn=None,records_reload=True,skip_loop=False,verbose=True,
-             einds=None,clear=False,enable_dispatch=None):
+             einds=None,clear=False,enable_dispatch=None,merge_dispatch=False):
+
+    # -- get cache info --
+    name,version = cache_info(exp_file_or_list,name=name,version=version)
+
+    # -- get exps --
+    exps = get_exps(exp_file_or_list)
 
     # -- optionally restrict inds using an input parser --
     if not(enable_dispatch is None):
         assert (einds is None),"Indices are selected from dispatch"
-        einds,clear,name = dispatch(enable_dispatch,einds,clear,name)
+        args = [merge_dispatch,einds,clear,name,version,skip_loop,exps]
+        einds,clear,name,skip_loop = dispatch(enable_dispatch,*args)
 
-    # -- open cache --
-    cache = open_cache(exp_file_or_list,name=name,version=version)
+    # -- open & clear cache --
+    cache = ExpCache(name,version)
     if clear: cache.clear()
 
-    # -- load list of exps --
-    exps = get_exps(exp_file_or_list)
+    # -- filter experiments --
     if not(einds is None): exps = [exps[i] for i in einds]
     print(len(exps),type(exps[0]))
 
@@ -44,15 +47,16 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
         # -- optionally skip --
         if skip_loop: break
 
+        # -- logic --
+        uuid = cache.get_uuid(exp) # assing ID to each Dict in Meshgrid
+
         # -- info --
         if verbose:
             print("-="*25+"-")
             print(f"Running experiment number {exp_num+1}/{nexps}")
             print("-="*25+"-")
+            print("UUID: ", uuid)
             pp.pprint(exp)
-
-        # -- logic --
-        uuid = cache.get_uuid(exp) # assing ID to each Dict in Meshgrid
 
         # -- optionally clear --
         if not(clear_fxn is None) and clear_fxn(exp_num,exp):
@@ -71,7 +75,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
     records = cache.to_records(exps,records_fn,records_reload)
     return records
 
-def open_cache(exp_file,name=None,version=None):
+def cache_info(exp_file,name=None,version=None):
     """
 
     Open ExpCache using the following inputs:
@@ -82,6 +86,13 @@ def open_cache(exp_file,name=None,version=None):
         edata = read(exp_file)
         name = edata['name']
         version = edata['version']
-    cache = ExpCache(name,version)
-    return cache
+    return name,version#cache
 
+def dispatch(enable_dispatch,*args):
+    if enable_dispatch == "slurm":
+        outs = slurm.dispatch_process(*args)
+    elif enable_dispatch == "split":
+        outs = split.dispatch_process(*args)
+    else:
+        raise ValueError("Uknown dispatch type [%s]" % enable_dispatch)
+    return outs

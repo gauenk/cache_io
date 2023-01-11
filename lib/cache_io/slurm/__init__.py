@@ -41,5 +41,5 @@ A user does not need to change their code at all!
 
 """
 
-from .api import run_launcher,run_process
+from .api import run_launcher,dispatch_process
 from .parsers import process_parser
