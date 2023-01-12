@@ -38,7 +38,6 @@ def get_exps(exp_file_or_list):
     if islist:
         isdict = isinstance(exp_file_or_list[0],edict)
         isdict = isdict or isinstance(exp_file_or_list[0],dict)
-        print(type(exp_file_or_list[0]))
         if isdict:
             exps = exp_file_or_list
         else: # list of config files
