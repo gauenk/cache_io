@@ -128,6 +128,7 @@ class ExpCache():
         for uuid,config,result in zip(uuids,configs,results):
             self.uuid_cache.add_uuid(uuid,config,overwrite)
             config.uuid = uuid
+            # print(uuid,result is None,overwrite)
             self.save_exp(uuid,config,result,overwrite)
         # print(self.uuid_cache.data.uuid)
 
@@ -254,6 +255,8 @@ class ExpCache():
 
         # -- standard append for config; each is a single value --
         for key,value in config.items():
+            if hasattr(value,"__getitem__"): # iterables become strings.
+                value = str(value)
             record[key] = list(repeat(np.array([value]),'1 -> r',r=rlen))
 
         # -- create id along axis --

@@ -10,7 +10,6 @@ from ._utils import *
 def append_new_pair(data,uuid_file,new_pair,overwrite=False):
     existing_uuid = get_uuid_from_config(data,new_pair.config)
     existing_config = get_config_from_uuid(data,new_pair.uuid)
-    # print(existing_uuid,existing_config)
     if existing_uuid == -1 and existing_config == -1:
         data.uuid.append(new_pair.uuid)
         data.config.append(new_pair.config)
@@ -25,11 +24,12 @@ def append_new_pair(data,uuid_file,new_pair,overwrite=False):
         data.config[idx] = new_pair.config
         write_uuid_file(uuid_file,data)
     elif (overwrite is True):# and (existing_config == -1): # only config new
-        idx = 0
+        idx = -1
         for didx,d_uuid in enumerate(data.uuid):
-            if d_uuid == new_pair.uuid:
+            if d_uuid == existing_uuid:
                 idx = didx
                 break
+        assert idx >= 0, "Must find existing uuid in data."
         data.uuid[idx] = new_pair.uuid
         data.config[idx] = new_pair.config
         write_uuid_file(uuid_file,data)

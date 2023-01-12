@@ -21,6 +21,7 @@ def unpack(edata):
     cfg = edict(edata['cfg'])
     groups = [v for g,v in edata.items() if "group" in g]
     grids = [v for g,v in edata.items() if "global_grids" in g]
+    if len(grids) == 0: grids = [{}]
     exps = []
     for grid in grids:
         exps += mesh_groups(grid,groups)
@@ -37,6 +38,7 @@ def get_exps(exp_file_or_list):
     if islist:
         isdict = isinstance(exp_file_or_list[0],edict)
         isdict = isdict or isinstance(exp_file_or_list[0],dict)
+        print(type(exp_file_or_list[0]))
         if isdict:
             exps = exp_file_or_list
         else: # list of config files

@@ -82,6 +82,7 @@ def cache_info(exp_file,name=None,version=None):
     (2) the exp_file
     """
     if (name is None) or (version is None):
+        assert isinstance(exp_file,str),"Must pass the exp file, not exps, if no cache (name & version) pair is provided."
         edata = read(exp_file)
         name = edata['name']
         version = edata['version']
