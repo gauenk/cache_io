@@ -56,12 +56,12 @@ def get_process_args(args):
     for start in range(args.exp_start,args.total_exps,args.chunk_size):
         end = min(start+args.chunk_size,args.total_exps)
         pargs_i = edict()
-        pargs_i.start = start
-        pargs_i.end = end
+        pargs_i.start = start if not(args.exec_all) else 0
+        pargs_i.end = end if not(args.exec_all) else -1
         pargs_i.script = args.script
         pargs_i.clear = False
         pargs_i.name = None
-        pargs_i.job_name = "%s_dispatch_%d" % (args.job_name_base,start)
+        pargs_i.job_name = "%s_%d" % (args.job_name_base,start)
         if start == 0 and args.clear_first is True:
             pargs_i.clear = True
         if args.unique_names is True:

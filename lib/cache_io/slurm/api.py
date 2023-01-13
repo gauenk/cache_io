@@ -80,7 +80,8 @@ def run_process(einds,clear,name,version,exps):
     """
     args = process_parser()
     print("[Process] Running: ",args)
-    einds = [i for i in range(args.start,args.end)]
+    end = len(exps) if args.end == -1 else args.end
+    einds = [i for i in range(args.start,end)]
     clear = args.clear
     if not(args.name is None):
         name = ".cache_io/%s" % (args.name)
