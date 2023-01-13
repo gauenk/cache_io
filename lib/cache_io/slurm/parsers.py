@@ -42,13 +42,13 @@ def launcher_parser():
     parser.add_argument('-U','--unique_names',action="store_true",
                         help="Each dispatched file is assigned a unique cache name. This removes the read/write race condition among the concurrent processes for a single cache, but requires merging caches after the experiments.")
     parser.add_argument('-J','--job_name_base',default=None)
-    parser.add_argument('-c','--clear_first',action="store_true",
+    parser.add_argument('-C','--clear_first',action="store_true",
                         help="Clears the cache only for the first experiment.")
     parser.add_argument('-A','--account',default="standby")
     parser.add_argument('-M','--machines',nargs='+',
                         default=["e","f","i","b","d","g"])
-    parser.add_argument('-n','--nodes',default=1)
-    parser.add_argument('-t','--time',default="0-4:00:00")
+    parser.add_argument('-N','--nodes',default=1)
+    parser.add_argument('-T','--time',default="0-4:00:00")
     parser.add_argument('--gpus_per_node',default=1)
     parser.add_argument('--cpus_per_task',default=2)
     parser.add_argument('--reset',action="store_true",
