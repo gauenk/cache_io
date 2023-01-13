@@ -39,7 +39,7 @@ def launcher_parser():
                         help="Number of Experiments per Process")
     parser.add_argument('--exp_start',default=0,
                         help="Experiment Index to Start On.")
-    parser.add_argument('-UN','--unique_names',action="store_true",
+    parser.add_argument('-U','--unique_names',action="store_true",
                         help="Each dispatched file is assigned a unique cache name. This removes the read/write race condition among the concurrent processes for a single cache, but requires merging caches after the experiments.")
     parser.add_argument('-J','--job_name_base',default=None)
     parser.add_argument('-c','--clear_first',action="store_true",

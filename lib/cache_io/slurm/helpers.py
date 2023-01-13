@@ -96,7 +96,7 @@ def run_launch_files(files,out_files):
         slurm_info = proc.stdout
         slurm_error = proc.stderr
         if slurm_error == "": slurm_id = slurm_info.split(" ")[-1].strip()
-        else: 
+        else:
             print(slurm_error)
             slurm_id = str(-1)
         print("Slurm ID: %s\nOutput: %s" % (slurm_id,out_file))
