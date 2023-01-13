@@ -15,14 +15,15 @@ def process_parser():
         prog = 'Parser which equips a script to be run by with the Python Slurm laucher',
         description = desc,
         epilog = 'Happy Hacking')
-    parser.add_argument('--start',type=int,default=-1,
+    parser.add_argument('--start',type=int,default=0,
                         help="Starting Experiment Index")
     parser.add_argument('--end',type=int,default=-1,
                         help="Ending Experiment Index")
     parser.add_argument('--clear',action="store_true")
     parser.add_argument('--name',type=str,default=None)
     args = parser.parse_known_args()[0]
-    return edict(vars(args))
+    args = edict(vars(args))
+    return args
 
 def launcher_parser():
     desc = "Launches python scripts equipped with 'slurm_parser' to accept arguments"
@@ -32,9 +33,9 @@ def launcher_parser():
         epilog = 'Happy Hacking')
     parser.add_argument('script',type=str,
                         help="The path of a Python script equipped with dispatch mode.")
-    parser.add_argument('total_exps',type=int,
+    parser.add_argument('total_exps',type=int,default=-1,nargs="?",
                         help="The total number of experiments")
-    parser.add_argument('chunk_size',type=int,default=1,
+    parser.add_argument('chunk_size',type=int,default=-1,nargs="?",
                         help="Number of Experiments per Process")
     parser.add_argument('--exp_start',default=0,
                         help="Experiment Index to Start On.")
@@ -45,7 +46,7 @@ def launcher_parser():
                         help="Clears the cache only for the first experiment.")
     parser.add_argument('-A','--account',default="standby")
     parser.add_argument('-M','--machines',nargs='+',
-                        default=["b","d","e","f","g","i"])
+                        default=["e","f","i","b","d","g"])
     parser.add_argument('-n','--nodes',default=1)
     parser.add_argument('-t','--time',default="0-4:00:00")
     parser.add_argument('--gpus_per_node',default=1)
@@ -62,11 +63,25 @@ def launcher_parser():
     # -- parse --
     args = parser.parse_known_args()[0]
 
+    # ---------------------------
+    # --  commandline deaults  --
+    # ---------------------------
+
+    args = edict(vars(args))
+
     # -- fill default job name --
     if args.job_name_base is None:
         args.job_name_base = Path(args.script).stem
 
-    args = edict(vars(args))
+    # -- if chunks aren't specified, run all exps in one proces --
+    print(args)
+    args.exec_all = args.chunk_size == -1
+    if args.total_exps == -1:
+        args.total_exps = 1
+        assert args.chunk_size == -1,"If total exps aren't specified, don't use chunk_size"
+    if args.exec_all:
+        args.chunk_size = 1
+
     return args
 
 
