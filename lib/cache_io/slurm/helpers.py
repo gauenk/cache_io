@@ -41,7 +41,7 @@ def create_launch_msg(pargs,fixed_args,uuid_s,output_dir):
     msg += "#SBATCH --output %s\n" % (output_fn)
     msg += "\n\n/bin/hostname\n\n"
     msg += "echo \"Saving log at %s\"\n" % (output_fn)
-    msg += "/home/gauenk/.localpython/bin/python3.8 -u %s --start %d --end %d --launched_with_slurm" % (pargs.script,pargs.start,pargs.end)
+    msg += "/home/gauenk/.pyenv/shims/python -u %s --start %d --end %d --launched_with_slurm" % (pargs.script,pargs.start,pargs.end)
     if pargs.clear is True:
         msg += " --clear"
     if not(pargs.name is None):
