@@ -37,7 +37,7 @@ def launcher_parser():
                         help="The total number of experiments")
     parser.add_argument('chunk_size',type=int,default=-1,nargs="?",
                         help="Number of Experiments per Process")
-    parser.add_argument('--exp_start',default=0,
+    parser.add_argument('--exp_start',default=0,type=int,
                         help="Experiment Index to Start On.")
     parser.add_argument('-UN','--unique_names',action="store_true",
                         help="Each dispatched file is assigned a unique cache name. This removes the read/write race condition among the concurrent processes for a single cache, but requires merging caches after the experiments.")
@@ -46,7 +46,7 @@ def launcher_parser():
                         help="Clears the cache only for the first experiment.")
     parser.add_argument('-A','--account',default="standby")
     parser.add_argument('-M','--machines',nargs='+',
-                        default=["e","f","i","b","d","g"])
+                        default=["e","f","b","d","g","i"])
     parser.add_argument('-n','--nodes',default=1)
     parser.add_argument('-t','--time',default="0-4:00:00")
     parser.add_argument('--gpus_per_node',default=1)
