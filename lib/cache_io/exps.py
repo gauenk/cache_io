@@ -7,10 +7,17 @@ Manage experiment files
 import yaml
 from easydict import EasyDict as edict
 from .mesh import mesh_groups,add_cfg
+from .mesh import read_rm_picked,append_picked
 
-def load(fn): # read + unpack
+def load(fn):
     edata = read(fn)
-    return unpack(edata)
+    picks = read_rm_picked(edata)
+    exps = unpack(edata)
+    return append_picked(exps,picks)
+
+# def load(fn): # read + unpack
+#     edata = read(fn)
+#     return unpack(edata)
 
 def read(fn):
     with open(fn,"r") as stream:

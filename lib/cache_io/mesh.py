@@ -152,3 +152,37 @@ def create_list_pairs(fields):
             pairs.append([field1,field2])
     return pairs
 
+
+#
+# -- read all fields with "picked"
+#
+
+def read_rm_picked(edata):
+    picked = {key:edata[key] for key in edata.keys() if "pick" in key}
+    for key in picked.keys():
+        del edata[key]
+    return picked
+
+def append_picked(exps,picked):
+    full_exps = []
+    for picked_key in picked:
+        pcfg = picked[picked_key]
+        picked_field = "_".join(picked_key.split("_")[1:])
+        for e in exps:
+            fval = e[picked_field]
+            pmenu = pcfg[picked_field]
+            if fval in pmenu:
+                pindex = pmenu.index(fval)
+            else:
+                pindex = pmenu.index("_def_")
+            pcfg_ = {key:pcfg[key][pindex] for key in pcfg.keys()}
+            for key in pcfg_:
+                if not(isinstance(pcfg_[key],list)):
+                    pcfg_[key] = [pcfg_[key]]
+                else:
+                    pcfg_[key] = pcfg_[key]
+            pexps = mesh(pcfg_)
+            add_cfg(pexps,e)
+            full_exps.extend(pexps)
+    return full_exps
+
