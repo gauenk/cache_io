@@ -13,7 +13,9 @@ def load(fn):
     edata = read(fn)
     picks = read_rm_picked(edata)
     exps = unpack(edata)
-    return append_picked(exps,picks)
+    if len(picks) > 0:
+        exps = append_picked(exps,picks)
+    return exps
 
 # def load(fn): # read + unpack
 #     edata = read(fn)
