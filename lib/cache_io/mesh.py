@@ -109,6 +109,8 @@ def create_meshgrid(lists,use_pd=True):
                 elem = bool(elem)
             elif isinstance(elem,np.float64):
                 elem = float(elem)
+            elif isinstance(elem,np.ndarray):
+                elem = elem.tolist()
             mesh_m.append(elem)
         mesh_T.append(mesh_m)
     return mesh_T
