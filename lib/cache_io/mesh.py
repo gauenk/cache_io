@@ -120,7 +120,7 @@ def factorize(l,use_pd=True):
         codes,uniques = pd.factorize(l)
     else:
         codes = list(np.arange(len(l)))
-        uniques = np.array(l)
+        uniques = np.array(l,dtype=object)
         # assert set(l) == set(np.unique(l))
     return codes,uniques
 
