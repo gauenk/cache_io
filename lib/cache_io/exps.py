@@ -4,6 +4,8 @@ Manage experiment files
 
 """
 
+import copy
+dcopy = copy.deepcopy
 import yaml
 from easydict import EasyDict as edict
 from .mesh import mesh_groups,add_cfg
@@ -28,14 +30,34 @@ def read(fn):
 
 def unpack(edata):
     cfg = edict(edata['cfg'])
+    mutexs = [v for g,v in edata.items() if "mutex" in g]
     groups = [v for g,v in edata.items() if "group" in g]
-    grids = [v for g,v in edata.items() if "global_grids" in g]
+    grids = [v for g,v in edata.items() if "global" in g]
     if len(grids) == 0: grids = [{}]
+
+    # -- mesh groups for each grid --
     exps = []
     for grid in grids:
         exps += mesh_groups(grid,groups)
+
+    # -- mutex == non-meshed (or mutually-exclusive) groups --
+    exps = append_mutex(exps,mutexs)
+
+    # -- use cfg to overwrite each exp from accumulation --
     if len(exps) == 0: exps = [cfg]
     else: add_cfg(exps,cfg)
+    return exps
+
+def append_mutex(exps,mutexs):
+    if len(mutexs) == 0: return exps
+    exps_base = dcopy(exps)
+    exps = []
+    for mut in mutexs:
+        mut_m = mesh_groups({},[mut])
+        for mut_m_i in mut_m:
+            exps_m = dcopy(exps_base)
+            add_cfg(exps_m,mut_m_i)
+            exps += exps_m
     return exps
 
 def get_exp_list(exp_file_or_list):
