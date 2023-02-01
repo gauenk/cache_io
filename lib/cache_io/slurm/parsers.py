@@ -49,6 +49,8 @@ def launcher_parser():
                         default=["e","f","b","d","g","i"])
     parser.add_argument('-N','--nodes',default=1)
     parser.add_argument('-T','--time',default="0-4:00:00")
+    # parser.add_argument('-E','--exclusive',action="store_true",
+    #                     help="Run experiment with slurm exclusive flag.")
     parser.add_argument('--gpus_per_node',default=1)
     parser.add_argument('--cpus_per_task',default=2)
     parser.add_argument('--reset',action="store_true",
