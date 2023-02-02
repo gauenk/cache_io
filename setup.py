@@ -21,7 +21,7 @@ setup(
     version='1.0.0',
     description='Caching large data results',
     long_description=long_description,
-    url='https://github.com/gauenk/hids',
+    url='https://github.com/gauenk/cache_io',
     author='Kent Gauen',
     author_email='gauenk@purdue.edu',
     license='MIT',
@@ -31,7 +31,7 @@ setup(
     packages=find_packages(""),
     entry_points = {
         'console_scripts': ['lsc=cache_io.lsc:main',
-                            "cache_copy=cmd_copy.lsc:main',
+                            'cache_cp=cache_io.cmd_copy:main',
                             'sbatch_py=cache_io.slurm.cmdline:main'],
     }
 )
