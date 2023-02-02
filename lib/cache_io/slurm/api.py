@@ -54,7 +54,7 @@ def run_launcher(base):
 def dispatch_process(merge_flag,einds,clear,name,version,skip_loop,exps):
     # if we merge, we don't run the process
     script_args = script_parser()
-    if merge_flag or script_args.merge:
+    if merge_flag or script_args.merge_cache:
         merge(script_args,name,version,exps)
         skip_loop = script_args.skip_loop # possibly False if merging
     elif script_args.launched_with_slurm is True:
@@ -97,7 +97,7 @@ def merge(script_args,name,version,exps):
     A. Run the script with unique names
 
     ```
-    sbatch_py <script_name.py> <num_of_experiments> <experiments_per_proc> -UN
+    sbatch_py <script_name.py> <num_of_experiments> <experiments_per_proc> -U
     ```    
 
     B. Merge the outputs to the original cache.
@@ -106,7 +106,7 @@ def merge(script_args,name,version,exps):
 
     ```
     python <script_name.py> <script_name.py> <num_of_experiments> \
-           <experiments_per_proc> -UN --merge
+           <experiments_per_proc> -U --merge_cache --skip_loop
     ```
 
     C. Rerun as normal. Any `enable_dispatch` is allowed.

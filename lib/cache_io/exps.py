@@ -32,6 +32,7 @@ def unpack(edata):
     cfg = edict(edata['cfg'])
     mutexs = [v for g,v in edata.items() if "mutex" in g]
     groups = [v for g,v in edata.items() if "group" in g]
+    listed = [v for g,v in edata.items() if "listed" in g]
     grids = [v for g,v in edata.items() if "global" in g]
     if len(grids) == 0: grids = [{}]
 
@@ -40,13 +41,32 @@ def unpack(edata):
     for grid in grids:
         exps += mesh_groups(grid,groups)
 
+    # -- add set of listed configs --
+    exps = append_listed(exps,listed)
+
+
     # -- mutex == non-meshed (or mutually-exclusive) groups --
     exps = append_mutex(exps,mutexs)
+
 
     # -- use cfg to overwrite each exp from accumulation --
     if len(exps) == 0: exps = [cfg]
     else: add_cfg(exps,cfg)
     return exps
+
+def append_listed(exps,listed):
+    if len(listed) == 0: return exps
+    exps_base = dcopy(exps)
+    exps = []
+    for list_i in listed:
+        L = len(list_i[list(list_i.keys())[0]])
+        for l in range(L):
+            dict_i = edict({k:v[l] for k,v in list_i.items()})
+            exps_li = dcopy(exps_base)
+            add_cfg(exps_li,dict_i)
+            exps += exps_li
+    return exps
+
 
 def append_mutex(exps,mutexs):
     if len(mutexs) == 0: return exps

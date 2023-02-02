@@ -46,7 +46,7 @@ def launcher_parser():
                         help="Clears the cache only for the first experiment.")
     parser.add_argument('-A','--account',default="standby")
     parser.add_argument('-M','--machines',nargs='+',
-                        default=["e","f","b","d","g","i"])
+                        default=["e","f","b","d","i","g"])
     parser.add_argument('-N','--nodes',default=1)
     parser.add_argument('-T','--time',default="0-4:00:00")
     # parser.add_argument('-E','--exclusive',action="store_true",
@@ -98,13 +98,14 @@ def script_parser():
         epilog = 'Happy Hacking')
 
     # -- merging --
-    parser.add_argument('--merge',action="store_true",
+    parser.add_argument('--merge_cache',action="store_true",
                         help="Allowing merging of uniquely named cache_io Exp Caches.")
     parser.add_argument('--merge_skip_empty',action="store_false",
                         help="Input when merging caches.")
     parser.add_argument('--merge_overwrite',action="store_true",
                         help="Input when merging caches.")
     parser.add_argument('--launched_with_slurm',action="store_true")
+    parser.add_argument('--skip_loop',action="store_true")
 
     # -- parse --
     args = parser.parse_known_args()[0]
