@@ -31,6 +31,7 @@ setup(
     packages=find_packages(""),
     entry_points = {
         'console_scripts': ['lsc=cache_io.lsc:main',
+                            "cache_copy=cmd_copy.lsc:main',
                             'sbatch_py=cache_io.slurm.cmdline:main'],
     }
 )
