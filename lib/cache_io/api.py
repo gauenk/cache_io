@@ -74,6 +74,11 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
     records = cache.to_records(exps,records_fn,records_reload)
     return records
 
+def load_results(exps,name,version,records_fn=None,records_reload=True):
+    cache = ExpCache(name,version)
+    records = cache.to_records(exps,records_fn,records_reload)
+    return records
+
 def cache_info(exp_file,name=None,version=None):
     """
 
