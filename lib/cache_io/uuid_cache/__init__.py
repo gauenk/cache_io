@@ -76,12 +76,12 @@ class UUIDCache():
         del data[uuid]
         write_uuid_file(self.uuid_file,data)
 
-    def get_uuid_from_config(self,exp_config):
+    def get_uuid_from_config(self,exp_config,skips=None):
         if self.data is None:
             self.init_uuid_file()
             return -1
         else:
-            return get_uuid_from_config(self.data,exp_config)
+            return get_uuid_from_config(self.data,exp_config,skips=skips)
 
     def get_config_from_uuid(self,uuid):
         if self.data is None:
@@ -102,28 +102,28 @@ class UUIDCache():
         data = edict({'uuid':[],'config':[]})
         write_uuid_file(self.uuid_file,data)
 
-    def add_uuid(self,uuid,config,overwrite=False):
-        self.add_uuid_config_pair(uuid,config,overwrite)
+    def add_uuid(self,uuid,config,overwrite=False,skips=None):
+        self.add_uuid_config_pair(uuid,config,overwrite,skips=skips)
 
-    def get_uuid(self,exp_config):
-        uuid = self.get_uuid_from_config(exp_config)
-        if uuid == -1:
+    def get_uuid(self,exp_config,uuid=None,skips=None):
+        uuid_cfg = self.get_uuid_from_config(exp_config,skips=skips)
+        if uuid_cfg == -1:
             if VERBOSE: print("Creating a new UUID and adding to cache file.")
-            uuid = str(uuid_gen.uuid4())
-            self.add_uuid_config_pair(uuid,exp_config)
+            uuid = str(uuid_gen.uuid4()) if uuid is None else uuid
+            self.add_uuid_config_pair(uuid,exp_config,skips=skips)
             # new_pair = edict({'uuid':uuid,'config':exp_config})
             # append_new_pair(self.data,self.uuid_file,new_pair)
             return uuid
         else:
             if VERBOSE: print(f"Exp Config has a UUID {uuid}")
-            return uuid
+            return uuid_cfg
 
-    def add_uuid_config_pair(self,uuid,exp_config,overwrite=False):
+    def add_uuid_config_pair(self,uuid,exp_config,overwrite=False,skips=None):
         if self.data is None:
             # print("\n"*10 + "init!" + "\n"*10)
             self.init_uuid_file()
         new_pair = edict({'uuid':uuid,'config':exp_config})
-        append_new_pair(self.data,self.uuid_file,new_pair,overwrite)
+        append_new_pair(self.data,self.uuid_file,new_pair,overwrite,skips=skips)
 
     def append_new(self,new_field,new_data):
         print("WARNING: This feature needs updating.")

@@ -39,6 +39,33 @@ Standard commandline (without slurm) launch:
 
 A user does not need to change their code at all!
 
+
+
+Example run
+
+-=-=-=-=-=-=- Standard Example -=-=-=-=-=-=-=-=-
+
+A. Run the script with unique names
+
+```
+sbatch_py <script_name.py> <num_of_experiments> <experiments_per_proc> -U
+```    
+
+B. Merge the outputs to the original cache.
+
+Launch the script with `python` using the `sbatch_py` arguments
+
+```
+python <script_name.py> <script_name.py> <num_of_experiments> \
+       <experiments_per_proc> -U --merge_cache --skip_loop
+```
+
+C. Rerun as normal. Any `enable_dispatch` is allowed.
+
+```
+python <script_name.py>
+```
+
 """
 
 from .api import run_launcher,dispatch_process

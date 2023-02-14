@@ -3,7 +3,7 @@ import pprint
 from pathlib import Path
 from ._debug import VERBOSE
 
-def compare_config(existing_config,proposed_config,verbose=False):
+def compare_config(existing_config,proposed_config,verbose=False,skips=None):
     if isinstance(existing_config,str): return False
     dev_check = False
     if dev_check and _dev_cmp(existing_config):
@@ -11,8 +11,9 @@ def compare_config(existing_config,proposed_config,verbose=False):
         print(proposed_config)
         print(existing_config)
         verbose = True
-    left_cmp = compare_pair(existing_config,proposed_config,["uuid"],verbose)
-    right_cmp = compare_pair(proposed_config,existing_config,["uuid"],verbose)
+    skips = ["uuid"] if skips is None else ["uuid",]+skips
+    left_cmp = compare_pair(existing_config,proposed_config,skips,verbose)
+    right_cmp = compare_pair(proposed_config,existing_config,skips,verbose)
     pair_cmp = left_cmp and right_cmp
     if dev_check and _dev_cmp(existing_config):
         print(left_cmp,right_cmp,pair_cmp)

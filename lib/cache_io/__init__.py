@@ -9,3 +9,6 @@ from .mesh import append_configs,add_cfg
 from .misc import strings2bools,exp_strings2bools
 from .api import run_exps,load_results
 from .exps import get_exps,get_exp_list
+from . import exps
+from . import train_stages
+from . import view

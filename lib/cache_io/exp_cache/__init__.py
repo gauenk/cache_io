@@ -98,8 +98,8 @@ class ExpCache():
             if VERBOSE:
                 print(f"WARNING: Not writing. UUID [{uuid}] exists @ [{self.root}]")
 
-    def get_uuid(self,config):
-        return self.uuid_cache.get_uuid(config)
+    def get_uuid(self,config,uuid=None,skips=None):
+        return self.uuid_cache.get_uuid(config,uuid=uuid,skips=skips)
 
     def add_uuid_config_pair(self,uuid,config):
         self.uuid_cache.add_uuid_config_pair(uuid,config)
@@ -401,6 +401,9 @@ class ExpCache():
         return path.exists()
 
     def write_results_file(self,path,uuid,data):
+        if data is None:
+            print("Warning: data is None.")
+            return
         data_files = self.convert_tensors_to_files(uuid,data)
         with open(path,'w') as f:
             json.dump(data_files,f)

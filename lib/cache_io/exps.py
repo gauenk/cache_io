@@ -13,6 +13,9 @@ from .mesh import read_rm_picked,append_picked
 
 def load(fn):
     edata = read(fn)
+    return load_edata(edata)
+
+def load_edata(edata):
     picks = read_rm_picked(edata)
     exps = unpack(edata)
     if len(picks) > 0:
@@ -29,7 +32,8 @@ def read(fn):
     return data
 
 def unpack(edata):
-    cfg = edict(edata['cfg'])
+
+    cfg = edict(edata['cfg']) if 'cfg' in edata else edict()
     mutexs = [v for g,v in edata.items() if "mutex" in g]
     groups = [v for g,v in edata.items() if "group" in g]
     listed = [v for g,v in edata.items() if "listed" in g]

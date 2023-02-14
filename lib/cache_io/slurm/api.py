@@ -137,6 +137,10 @@ def merge(script_args,name,version,exps):
     proc_args = get_process_args(args)
     names = [".cache_io/%s" % p.name for p in proc_args]
     
+    # print(name)
+    # print(names)
+    # exit(0)
+
     # -- copy each name --
     cache = ExpCache(name,version)
     print("Destination Cache: [%s]" % name)

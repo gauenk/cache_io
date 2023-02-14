@@ -7,8 +7,8 @@ from ._write import *
 from ._convert import *
 from ._utils import *
 
-def append_new_pair(data,uuid_file,new_pair,overwrite=False):
-    existing_uuid = get_uuid_from_config(data,new_pair.config)
+def append_new_pair(data,uuid_file,new_pair,overwrite=False,skips=None):
+    existing_uuid = get_uuid_from_config(data,new_pair.config,skips=skips)
     existing_config = get_config_from_uuid(data,new_pair.uuid)
     if existing_uuid == -1 and existing_config == -1:
         data.uuid.append(new_pair.uuid)
@@ -17,7 +17,7 @@ def append_new_pair(data,uuid_file,new_pair,overwrite=False):
     elif (overwrite is True) and (existing_uuid == -1): # only uuid new
         idx = 0
         for didx,d_config in enumerate(data.config):
-            if compare_config(d_config,new_pair.config):
+            if compare_config(d_config,new_pair.config,skips=skips):
                 idx = didx
                 break
         data.uuid[idx] = new_pair.uuid

@@ -7,7 +7,7 @@ with a uuid
 
 from ._utils import compare_config
 
-def get_uuid_from_config(data,exp_config):
+def get_uuid_from_config(data,exp_config,skips=None):
 
     """
 
@@ -19,7 +19,7 @@ def get_uuid_from_config(data,exp_config):
         raise ValueError("[uuid_cache/_convert.py get_uuid_from_config]: Data is None.")
     verbose = False
     for uuid,config in zip(data.uuid,data.config):
-        match = compare_config(config,exp_config,verbose)
+        match = compare_config(config,exp_config,verbose,skips=skips)
         if match: return uuid
     return -1 # no match
 

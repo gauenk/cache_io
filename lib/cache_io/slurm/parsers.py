@@ -1,7 +1,7 @@
 
 """
 
-Considering two levels of parser... This would make merging cleaner.
+Two levels of parsing for merging
 
 """
 
@@ -46,13 +46,15 @@ def launcher_parser():
                         help="Clears the cache only for the first experiment.")
     parser.add_argument('-A','--account',default="standby")
     parser.add_argument('-M','--machines',nargs='+',
-                        default=["e","f","b","d","i","g"])
+                        default=["e","f","b","g"]) # d, i
+    parser.add_argument('-WM','--with_machines',action="store_true",
+                        help="Run exp with specified machines.")
     parser.add_argument('-N','--nodes',default=1)
     parser.add_argument('-T','--time',default="0-4:00:00")
     # parser.add_argument('-E','--exclusive',action="store_true",
     #                     help="Run experiment with slurm exclusive flag.")
     parser.add_argument('--gpus_per_node',default=1)
-    parser.add_argument('--cpus_per_task',default=2)
+    parser.add_argument('--cpus_per_task',default=4)
     parser.add_argument('--reset',action="store_true",
                         help="Clear out the dispatch launch and output paths.")
 
@@ -80,7 +82,8 @@ def launcher_parser():
     args.exec_all = args.chunk_size == -1
     if args.total_exps == -1:
         args.total_exps = 1
-        assert args.chunk_size == -1,"If total exps aren't specified, don't use chunk_size"
+        msg = "If total exps aren't specified, don't use chunk_size"
+        assert args.chunk_size == -1,msg
     if args.exec_all:
         args.chunk_size = 1
 
@@ -91,7 +94,7 @@ def script_parser():
 
     # -- merging --
     desc = 'This parser _always_ runs when enable_dispatch="slum". '
-    desc += 'Determines the scripts function: [mering,processing, or launching]'
+    desc += 'Determines the scripts function: [mering, processing, or launching]'
     parser = argparse.ArgumentParser(
         prog = 'Parser which equips a script to be run by with the Python Slurm laucher',
         description = desc,

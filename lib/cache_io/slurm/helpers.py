@@ -35,7 +35,8 @@ def create_launch_msg(pargs,fixed_args,uuid_s,output_dir):
     msg = r"#!/bin/sh -l" + "\n"*2
     for sbatch_key,sbatch_val in fixed_args.items():
         msg += "#SBATCH %s %s\n" % (sbatch_key,sbatch_val)
-    msg += "#SBATCH -C %s\n" % (pargs.machine)
+    if pargs.with_machines:
+        msg += "#SBATCH -C %s\n" % (pargs.machine)
     msg += "#SBATCH --job-name %s\n" % (pargs.job_name)
     output_fn =  str(output_dir / ("%s_%d_%d_log.txt" % (uuid_s,pargs.start,pargs.end)))
     msg += "#SBATCH --output %s\n" % (output_fn)
@@ -62,6 +63,7 @@ def get_process_args(args):
         pargs_i.clear = False
         pargs_i.name = None
         pargs_i.job_name = "%s_%d" % (args.job_name_base,start)
+        pargs_i.with_machines = args.with_machines
         if start == 0 and args.clear_first is True:
             pargs_i.clear = True
         if args.unique_names is True:

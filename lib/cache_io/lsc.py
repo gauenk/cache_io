@@ -6,6 +6,7 @@ import sys,glob,os
 from pathlib import Path
 # sys.path.append("/home/gauenk/Documents/experiments/cl_gen/lib/")
 from .uuid_cache import UUIDCache,print_config
+from . import view
 
 def create_uuid_list_from_glob(path_l,cache):
 
@@ -50,13 +51,23 @@ def main():
     uuid_l = create_uuid_list_from_glob(path_l,cache)
     config_l = cache.get_config_from_uuid_list(uuid_l)
     # if (len(config_l) == 1 and config_l[0] == -1) or (len(config_l) == 0):
+    raw = False
     if len(config_l) == 0:
-        print("No uuids selected so printing UUID Database")
-        for index,uuid in enumerate(cache.data['uuid']):
-            config = cache.data['config'][index]
-            print("-="*35)
-            print(f"[UUID]: {uuid}")
-            print_config(config,indent=8)
+        raw = raw or len(cache.data['config']) == 1
+        if raw:
+            print("No uuids selected so printing UUID Database")
+            for index,uuid in enumerate(cache.data['uuid']):
+                config = cache.data['config'][index]
+                print("-="*35)
+                print(f"[UUID]: {uuid}")
+                print_config(config,indent=8)
+        else:
+            cfgs = cache.data['config']
+            #cfgs = [cfg for cfg in cfgs if cfg.nepochs == 100]
+            uuids = view.get_uuids(cfgs,cache)
+            diffs = view.get_diffs(cfgs)
+            view.print_loop(cfgs,uuids,diffs)
+            # view.run(cache.data['cfgs'],cache)
     else:
         # -- print results --
         pidx = 0

@@ -18,7 +18,8 @@ from . import slurm
 
 def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
              records_fn=None,records_reload=True,skip_loop=False,verbose=True,
-             einds=None,clear=False,enable_dispatch=None,merge_dispatch=False):
+             einds=None,clear=False,uuids=None,
+             enable_dispatch=None,merge_dispatch=False):
 
     # -- get cache info --
     name,version = cache_info(exp_file_or_list,name=name,version=version)
@@ -37,7 +38,14 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
     if clear: cache.clear()
 
     # -- filter experiments --
-    if not(einds is None): exps = [exps[i] for i in einds]
+    if not(einds is None): 
+        exps = [exps[i] for i in einds]
+        if not(uuids is None):
+            uuids = [uuids[i] for i in einds]
+
+    # -- init uuids if needed --
+    if uuids is None:
+        uuids = [None for _ in exps]
 
     # -- run exps --
     nexps = len(exps)
@@ -47,7 +55,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
         if skip_loop: break
 
         # -- logic --
-        uuid = cache.get_uuid(exp) # assing ID to each Dict in Meshgrid
+        uuid = cache.get_uuid(exp,uuid=uuids[exp_num]) # assing ID to each Dict in Meshgrid
 
         # -- info --
         if verbose:
