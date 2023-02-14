@@ -109,3 +109,12 @@ def dispatch(enable_dispatch,*args):
     else:
         raise ValueError("Uknown dispatch type [%s]" % enable_dispatch)
     return outs
+
+def get_uuids(exps,name,version="v1"):
+    # -- open cache --
+    cache = ExpCache(name,version)
+    uuids = []
+    for exp in exps:
+        uuids.append(cache.get_uuid(exp))
+    return uuids
+
