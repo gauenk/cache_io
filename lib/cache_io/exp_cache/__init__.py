@@ -137,6 +137,7 @@ class ExpCache():
         configs = []
         results = []
         data = self.uuid_cache.data
+        if data is None: return [],[],[]
         for uuid in data.uuid:
             config = self.get_config_from_uuid(uuid)
             result = self.load_exp(config)
@@ -402,7 +403,7 @@ class ExpCache():
 
     def write_results_file(self,path,uuid,data):
         if data is None:
-            print("Warning: data is None.")
+            print("[exp_cache/__init__.py] Warning: data is None.")
             return
         data_files = self.convert_tensors_to_files(uuid,data)
         with open(path,'w') as f:

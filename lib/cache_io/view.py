@@ -24,7 +24,12 @@ def print_loop(cfgs,uuids,diffs):
     for i,cfg in enumerate(cfgs):
         fmt = "-="*8 + "-" + " [%d] %s " + "-="*8+"-"
         print(fmt % (i,uuids[i]))
-        cfg_view = {d:cfg[d] for d in diffs}
+        cfg_view = {}
+        for d in diffs:
+            if d in cfg:
+                cfg_view[d] = cfg[d]
+            else:
+                cfg_view[d] = None
         pp.pprint(cfg_view)
 
 def get_uuids(cfgs,cache):
@@ -59,6 +64,7 @@ def compare(cfg0,cfg1):
     for key in cfg0:
         if not(key in cfg1):
             diffs.append(key)
+            continue
         if cfg0[key] != cfg1[key]:
             diffs.append(key)
     return diffs

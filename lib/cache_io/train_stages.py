@@ -29,6 +29,7 @@ from pathlib import Path
 from easydict import EasyDict as edict
 from .exp_cache import ExpCache
 from .exps import get_exps
+from .exps import load_edata
 
 def run(fn,cache_name,cache_version="v1",
         load_complete=False,stage_select=-1):
@@ -36,8 +37,12 @@ def run(fn,cache_name,cache_version="v1",
     # -- open files --
     stages = read(fn)
     chkpt_root = stages.chkpt_root
-    bases = get_exps(stages.train_base)
     cache = ExpCache(cache_name,cache_version)
+
+    # -- build bases --
+    base = load_train_base(stages)
+    stages.mesh['cfg'] = base
+    bases = load_edata(stages.mesh)
 
     # -- run for each base config --
     exps,uuids = [],[]
@@ -173,6 +178,23 @@ def get_checkpoint(checkpoint_dir,uuid,nepochs):
     chkpt_fn = Path(checkpoint_dir) / ("%s-epoch=%02d.ckpt" % (uuid,nepochs))
     return chkpt_fn
 
+def load_train_base(stages):
+
+    # -- load train/test base --
+    base = get_exps(stages.base)
+    assert len(base) == 1,"The base must be one experiment."
+    base = base[0] # one elem
+
+    # -- load learning/training info --
+    learning = get_exps(stages.learning)
+    assert len(learning) == 1,"The learning must be one experiment."
+    learning = learning[0] # one elem
+
+    # -- append --
+    for key in learning:
+        base[key] = learning[key]
+    
+    return base
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #
