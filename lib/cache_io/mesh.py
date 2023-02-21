@@ -166,25 +166,36 @@ def read_rm_picked(edata):
     return picked
 
 def append_picked(exps,picked):
-    full_exps = []
-    for picked_key in picked:
+
+    # -- order by num --
+    keys = list(picked.keys())
+    nums = [int(p[4:].split("_")[0]) for p in keys]
+    keys = [k for _, k in sorted(zip(nums, keys))]
+
+    # -- fill exps each time --
+    for picked_key in keys:
         pcfg = picked[picked_key]
-        picked_field = "_".join(picked_key.split("_")[1:])
-        for e in exps:
-            fval = e[picked_field]
-            pmenu = pcfg[picked_field]
-            if fval in pmenu:
-                pindex = pmenu.index(fval)
+        exps = append_picked_i(exps,pcfg,picked_key)
+    return exps
+
+def append_picked_i(exps,pcfg,picked_key):
+    full_exps = []
+    picked_field = "_".join(picked_key.split("_")[1:])
+    for e in exps:
+        fval = e[picked_field]
+        pmenu = pcfg[picked_field]
+        if fval in pmenu:
+            pindex = pmenu.index(fval)
+        else:
+            pindex = pmenu.index("_def_")
+        pcfg_ = {key:pcfg[key][pindex] for key in pcfg.keys()}
+        for key in pcfg_:
+            if not(isinstance(pcfg_[key],list)):
+                pcfg_[key] = [pcfg_[key]]
             else:
-                pindex = pmenu.index("_def_")
-            pcfg_ = {key:pcfg[key][pindex] for key in pcfg.keys()}
-            for key in pcfg_:
-                if not(isinstance(pcfg_[key],list)):
-                    pcfg_[key] = [pcfg_[key]]
-                else:
-                    pcfg_[key] = pcfg_[key]
-            pexps = mesh(pcfg_)
-            add_cfg(pexps,e)
-            full_exps.extend(pexps)
+                pcfg_[key] = pcfg_[key]
+        pexps = mesh(pcfg_)
+        add_cfg(pexps,e)
+        full_exps.extend(pexps)
     return full_exps
 

@@ -19,8 +19,8 @@ def load_edata(edata):
     picks = read_rm_picked(edata)
     exps = unpack(edata)
     if len(picks) > 0:
-        if len(picks) > 1:
-            print("Warning. Not able to properly handle more than one pick list.")
+        # if len(picks) > 1:
+        #     print("Warning. Not able to properly handle more than one pick list.")
         exps = append_picked(exps,picks)
     return exps
 
