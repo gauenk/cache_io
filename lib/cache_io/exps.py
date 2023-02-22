@@ -62,17 +62,20 @@ def unpack(edata):
 
 def append_listed(exps,listed):
     if len(listed) == 0: return exps
-    exps_base = dcopy(exps)
-    exps = []
     for list_i in listed:
-        L = len(list_i[list(list_i.keys())[0]])
-        for l in range(L):
-            dict_i = edict({k:v[l] for k,v in list_i.items()})
-            exps_li = dcopy(exps_base)
-            add_cfg(exps_li,dict_i)
-            exps += exps_li
+        exps = append_listed_i(exps,list_i)
     return exps
 
+def append_listed_i(exps,list_i):
+    exps_base = dcopy(exps)
+    exps = []
+    L = len(list_i[list(list_i.keys())[0]])
+    for l in range(L):
+        dict_i = edict({k:v[l] for k,v in list_i.items()})
+        exps_li = dcopy(exps_base)
+        add_cfg(exps_li,dict_i)
+        exps += exps_li
+    return exps
 
 def append_mutex(exps,mutexs):
     if len(mutexs) == 0: return exps
