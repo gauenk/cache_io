@@ -68,6 +68,9 @@ class UUIDCache():
         """
         return read_uuid_file(self.uuid_file)
 
+    def write_uuid_file(self,data):
+        write_uuid_file(self.uuid_file,data)
+
     def remove_uuid(self,uuid):
         data = read_uuid_file(self.uuid_file)
         if not(uuid in data):

@@ -9,8 +9,13 @@ import shutil,os,json,tqdm
 import pandas as pd
 from pathlib import Path
 
+
+from tqdm import tqdm # things are slow.
+from functools import partialmethod
+
 import numpy as np
 from einops import rearrange,repeat
+from easydict import EasyDict as edict
 
 from cache_io.uuid_cache import UUIDCache
 from cache_io.tensor_cache import TensorCache
@@ -123,14 +128,29 @@ class ExpCache():
             record[result_id] = result
         records.append(record)
 
-    def save_raw(self,uuids,configs,results,overwrite=False):
+    def save_raw(self,uuids,configs,results,overwrite=False,use_tqdm=False):
         N  = len(uuids)
-        for uuid,config,result in zip(uuids,configs,results):
+        zipped = zip(uuids,configs,results)
+        tqdm.__init__ = partialmethod(tqdm.__init__, disable=not(use_tqdm))
+        for uuid,config,result in tqdm(zipped,total=N):
+            # print(uuid)
             self.uuid_cache.add_uuid(uuid,config,overwrite)
             config.uuid = uuid
             # print(uuid,result is None,overwrite)
             self.save_exp(uuid,config,result,overwrite)
         # print(self.uuid_cache.data.uuid)
+
+    def save_raw_fast(self,uuids,configs,results):
+        """
+
+        runs save_raw but does not check uniqueness and overwrites all values
+
+        """
+        uuid_data = edict({'uuid':uuids,'config':configs})
+        self.uuid_cache.write_uuid_file(uuid_data)
+        for uuid,res in zip(uuids,results):
+            if res is None: continue
+            self.write_results(uuid,res)
 
     def load_raw(self,skip_empty=True):
         uuids = []
@@ -146,6 +166,23 @@ class ExpCache():
             configs.append(config)
             results.append(result)
         return uuids,configs,results
+
+    def load_raw_fast(self,skip_results=False):
+        uuid_data = self.uuid_cache.data
+        if uuid_data is None:
+            uuids = []
+            cfgs = []
+        else:
+            uuids = uuid_data['uuid']
+            cfgs = uuid_data['config']
+        if skip_results or (uuid_data is None):
+            results = [None for _ in range(len(cfgs))]
+        else:
+            results = []
+            for cfg in cfgs:
+                result = self.load_exp(cfg)
+                results.append(result)
+        return uuids,cfgs,results
 
     def load_raw_configs(self,in_configs,skip_empty=True):
         return self.load_raw_exps(in_configs,skip_empty)
