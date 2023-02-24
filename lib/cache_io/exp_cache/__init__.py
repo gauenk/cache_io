@@ -251,7 +251,7 @@ class ExpCache():
 
         # -- load each record --
         records = []
-        for config in tqdm.tqdm(exps):
+        for config in tqdm(exps):
             results = self.load_exp(config)
             uuid = self.get_uuid(config)
             if results is None: continue
