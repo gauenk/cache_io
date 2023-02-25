@@ -140,3 +140,11 @@ def save_json(fn,pyobj):
     with open(fn, "w") as outfile:
         outfile.write(json_object)
 
+def get_job_names(args):
+    names = []
+    nprocs = (args.nexps-1)//args.nexps_pp+1
+    for proc_i in range(nprocs):
+        job_start = proc_i * args.nexps_pp
+        name_i = "%s_dispatch_%d" % (args.job_id,job_start)
+        names.append(name_i)
+    return names

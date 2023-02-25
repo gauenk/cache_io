@@ -109,6 +109,10 @@ def script_parser():
                         help="Write over the uuid,results of the source cache")
     parser.add_argument('--launched_with_slurm',action="store_true")
     parser.add_argument('--skip_loop',action="store_true")
+    parser.add_argument('--job_id',type=str,default=None)
+    parser.add_argument('--nexps',type=int,default=None)
+    parser.add_argument('--nexps_pp',type=int,default=None)
+    parser.add_argument('--fast',action="store_true")
 
     # -- parse --
     args = parser.parse_known_args()[0]

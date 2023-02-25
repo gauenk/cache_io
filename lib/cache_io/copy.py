@@ -28,6 +28,14 @@ def enames(name0,version0,name1,version1,exps=None,
     dest = ExpCache(name1,version1)
     exp_cache(src,dest,exps,overwrite,skip_empty)
 
+def exp_cache_fast(src,dest):
+    """
+    Copy all from src to dest without checks. 
+    Much faster. More dangerous. #YOLO!
+    """
+    uuids,cfgs,results = src.load_raw_fast()
+    dest.append_raw_fast(uuids,cfgs,results)
+
 def exp_cache(src,dest,exps=None,overwrite=False,skip_empty=True):
     """
     src,dest: Two ExpCache files

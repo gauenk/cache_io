@@ -66,7 +66,11 @@ class UUIDCache():
 
         data.config[i] is a list of (key,values) corresponding to data.uuid[i]
         """
-        return read_uuid_file(self.uuid_file)
+        data = read_uuid_file(self.uuid_file)
+        if data is None:
+            self.init_uuid_file()
+            data = read_uuid_file(self.uuid_file)
+        return data
 
     def write_uuid_file(self,data):
         write_uuid_file(self.uuid_file,data)
