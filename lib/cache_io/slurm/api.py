@@ -10,6 +10,7 @@ from pathlib import Path
 from ..exp_cache import ExpCache
 from ..copy import exp_cache as exp_cache_copy
 from ..copy import exp_cache_fast as exp_cache_copy_fast
+from ..copy import exp_cache_very_fast as exp_cache_copy_very_fast
 
 from .parsers import launcher_parser,process_parser,script_parser
 from .helpers import create_paths
@@ -54,12 +55,14 @@ def run_launcher(base):
     output_dir,launch_dir,info_dir = create_paths(base,args.reset)
 
     # -- create slurm launch files --
+    unique = args.unique_names
     proc_args = get_process_args(args)
     fixed_args = get_fixed_args(args)
     files,out_fns,uuid_s = create_launch_files(proc_args,fixed_args,launch_dir,output_dir)
+    print("UUID: ",uuid_s)
 
     # -- launch files --
-    slurm_ids = run_launch_files(files,out_fns)
+    slurm_ids = run_launch_files(files,out_fns,unique)
 
     # -- save launch info --
     save_launch_info(info_dir,uuid_s,args.job_name_base,slurm_ids,out_fns,proc_args)
@@ -136,10 +139,16 @@ def merge(args,name,version,exps):
     # -- copy each name --
     cache = ExpCache(name,version)
     print("Destination Cache: [%s]" % name)
+
+    # -- copy all at once --
+    if args.very_fast:
+        exp_cache_copy_very_fast(cache_names,cache,version,args.merge_skip_results)
+
+    # -- copy in a loop --
     for cache_name_p in tqdm.tqdm(cache_names):
         print("Copying [%s]" % (cache_name_p))
         cache_p = ExpCache(cache_name_p,version)
         if args.fast:
-            exp_cache_copy_fast(cache_p,cache)
+            exp_cache_copy_fast(cache_p,cache,args.merge_skip_results)
         else:
             exp_cache_copy(cache_p,cache,exps,overwrite=overwrite,skip_empty=skip_empty)    

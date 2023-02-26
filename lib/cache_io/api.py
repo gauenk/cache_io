@@ -80,7 +80,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
 
     # -- records --
     if to_records_fast:
-        records = cache.to_records_fast(exps,records_fn,records_reload)
+        records = cache.to_records_fast(records_fn,records_reload)
     else:
         records = cache.to_records(exps,records_fn,records_reload)
 

@@ -167,7 +167,7 @@ class ExpCache():
         uuids_f,configs_f,results_f = [],[],[]
         for (uuid,cfg,res) in zip(uuids,configs,results):
             if uuid in data['uuid']: continue
-            if res is None: continue
+            if not(self.results_exists(uuid)): continue
             uuids_f.append(uuid)
             configs_f.append(cfg)
             results_f.append(res)
@@ -269,7 +269,7 @@ class ExpCache():
     def load_flat_records(self,exps,save_agg=None,clear=False):
         return self.to_records(exps,save_agg,clear)
 
-    def to_records_fast(self,exps,save_agg=None,clear=False):
+    def to_records_fast(self,save_agg=None,clear=False):
         """
 
         Load records quickly without checking caches each time.
@@ -280,10 +280,15 @@ class ExpCache():
         if not(records is None):
             return records
 
+        # -- gather uuids,exps --
+        uuids = self.uuid_cache.data['uuid']
+        exps = self.uuid_cache.data['config']
+
         # -- def parallel fxn --
-        def append(cfg):
+        def append(cfg,uuid):
             record = []
-            uuid = self.get_uuid(cfg)
+            # uuid = self.uuid_cache.read_uuid(cfg) # not allowed to optionally write.
+            assert uuid != -1,"All uuids must exist for fast read to work."
             results = self.load_exp(cfg)
             if results is None:
                 print(uuid,flush=True)
@@ -297,7 +302,7 @@ class ExpCache():
         E = len(exps)
         append_d = delayed(append)
         with tqdm_joblib(desc="Loading Experiment Results", total=E) as progress_bar:
-            records = Parallel(n_jobs=8)(append_d(exp) for exp in exps)
+            records = Parallel(n_jobs=8)(append_d(exp,uuid) for exp,uuid in zip(exps,uuids))
         records = pd.concat(records)
         records.reset_index(inplace=True,drop=True)
 
@@ -496,6 +501,11 @@ class ExpCache():
         if not results_path.exists(): return None
         results = self.read_results_file(results_path,uuid)
         return results
+
+    def results_exists(self,uuid):
+        uuid_path = self.root / Path(uuid)
+        results_path = uuid_path / "results.pkl"
+        return results_path.exists()
 
     def write_results(self,uuid,results):
         uuid_path = self.root / Path(uuid)

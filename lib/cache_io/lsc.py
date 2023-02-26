@@ -25,6 +25,8 @@ def parse():
     parser.add_argument("--only_uuids",action="store_true",
                         help="View only uuids")
     parser.add_argument("--uuids",nargs="+",default=[])
+    parser.add_argument("--lim",type=int,default=-1,
+                        help="Limits uuids from global")
     args = parser.parse_args()
     return edict(vars(args))
 
@@ -67,13 +69,16 @@ def main():
 
     # -- collect configs from paths --
     uuids = args.uuids
-    if args.only_uuids:
-        view_only_uuids(uuids)
-        return
-    raw = args.raw or (len(cache.data['config']) == 1 ) or (len(uuids) <= 1)
+    raw = args.raw or (len(cache.data['config']) == 1 )# or (len(uuids) <= 1)
     if len(uuids) == 0:
         print("No uuids selected so printing UUID Database")
         uuids = cache.data['uuid']
+        if args.lim > 0: uuids = uuids[:args.lim]
+
+    # -- view only uuids --
+    if args.only_uuids:
+        view_only_uuids(uuids)
+        return
 
     # -- load configs --
     cfgs = cache.get_config_from_uuid_list(uuids)
