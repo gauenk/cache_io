@@ -289,7 +289,7 @@ class ExpCache():
                 print(uuid,flush=True)
                 return []
             self.append_record(record,uuid,cfg,results)
-            return record
+            return record[0]
 
         # -- launch parallel --
         # uuids = self.uuid_cache.data['uuid']
@@ -297,7 +297,7 @@ class ExpCache():
         E = len(exps)
         append_d = delayed(append)
         with tqdm_joblib(desc="Loading Experiment Results", total=E) as progress_bar:
-            records = Parallel(n_jobs=1)(append_d(exp) for exp in exps)
+            records = Parallel(n_jobs=8)(append_d(exp) for exp in exps)
         records = pd.concat(records)
         records.reset_index(inplace=True,drop=True)
 

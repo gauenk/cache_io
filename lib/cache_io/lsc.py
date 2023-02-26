@@ -66,32 +66,32 @@ def main():
         exit()
 
     # -- collect configs from paths --
-    uuid_l = get_uuids(args.uuids,cache)
+    uuids = args.uuids
     if args.only_uuids:
-        view_only_uuids(uuid_l)
+        view_only_uuids(uuids)
         return
-    config_l = cache.get_config_from_uuid_list(uuid_l)
-    # if (len(config_l) == 1 and config_l[0] == -1) or (len(config_l) == 0):
-    if True:
-        raw = args.raw or len(cache.data['config']) == 1
-        if raw:
-            print("No uuids selected so printing UUID Database")
-            for index,uuid in enumerate(cache.data['uuid']):
-                config = cache.data['config'][index]
-                print("-="*35)
-                print(f"[UUID]: {uuid}")
-                print_config(config,indent=8)
-        else:
-            cfgs = cache.data['config']
-            #cfgs = [cfg for cfg in cfgs if cfg.nepochs == 100]
-            uuids = view.get_uuids(cfgs,cache)
-            diffs = view.get_diffs(cfgs)
-            view.print_loop(cfgs,uuids,diffs)
-            # view.run(cache.data['cfgs'],cache)
-    # else:
-    #     # -- print results --
-    #     for uuid,config in zip(uuid_l,config_l):
-    #         if config != -1:
-    #             print("-="*35)
-    #             print(f"[UUID]: {uuid}")
-    #             print_config(config,indent=8)
+    raw = args.raw or (len(cache.data['config']) == 1 ) or (len(uuids) <= 1)
+    if len(uuids) == 0:
+        print("No uuids selected so printing UUID Database")
+        uuids = cache.data['uuid']
+
+    # -- load configs --
+    cfgs = cache.get_config_from_uuid_list(uuids)
+
+    if raw:
+        for uuid,cfg in zip(uuids,cfgs):
+            print("-="*35)
+            print(f"[UUID]: {uuid}")
+            print_config(cfg,indent=8)
+    else:
+        # cfgs = cache.data['config']
+        #cfgs = [cfg for cfg in cfgs if cfg.nepochs == 100]
+        # uuids = view.get_uuids(cfgs,cache)
+        # print(uuids)
+        # print(uuids)
+        # exit(0)
+        # if use_sel_uuids:
+        #     uuids = [u for u in uuids if u in uuids]
+        diffs = view.get_diffs(cfgs)
+        view.print_loop(cfgs,uuids,diffs)
+        # view.run(cache.data['cfgs'],cache)
