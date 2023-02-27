@@ -143,6 +143,7 @@ def merge(args,name,version,exps):
     # -- copy all at once --
     if args.very_fast:
         exp_cache_copy_very_fast(cache_names,cache,version,args.merge_skip_results)
+        return
 
     # -- copy in a loop --
     for cache_name_p in tqdm.tqdm(cache_names):

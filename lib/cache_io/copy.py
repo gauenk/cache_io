@@ -34,6 +34,8 @@ def exp_cache_very_fast(src_list,dest,version,skip_results=False):
     Copy all from src to dest without checks. 
     Much faster. More dangerous. #YOLO!
     """
+    print("Very Fast.")
+    print("skip_results: ",skip_results)
     uuids,cfgs,results = [],[],[]
     for src_name in tqdm.tqdm(src_list):
         src = ExpCache(src_name,version)
@@ -41,6 +43,7 @@ def exp_cache_very_fast(src_list,dest,version,skip_results=False):
         uuids.extend(uuids_i)
         cfgs.extend(cfgs_i)
         results.extend(results_i)
+    # print(len(uuids))
     dest.append_raw_fast(uuids,cfgs,results)
 
 def exp_cache_fast(src,dest,skip_results=False):

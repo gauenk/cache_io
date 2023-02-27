@@ -69,7 +69,7 @@ def main():
 
     # -- collect configs from paths --
     uuids = args.uuids
-    raw = args.raw or (len(cache.data['config']) == 1 )# or (len(uuids) <= 1)
+    raw = args.raw or (len(uuids) == 1)
     if len(uuids) == 0:
         print("No uuids selected so printing UUID Database")
         uuids = cache.data['uuid']
