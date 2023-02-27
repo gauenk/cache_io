@@ -66,7 +66,10 @@ class UUIDCache():
 
         data.config[i] is a list of (key,values) corresponding to data.uuid[i]
         """
-        return read_uuid_file(self.uuid_file)
+        if not(self.uuid_file.exists()):
+            self.init_uuid_file()
+        data = read_uuid_file(self.uuid_file)
+        return data
 
     def write_uuid_file(self,data):
         write_uuid_file(self.uuid_file,data)
@@ -102,11 +105,16 @@ class UUIDCache():
     def init_uuid_file(self):
         if VERBOSE: print(f"Init [{self.uuid_file}]")
         if self.uuid_file.exists(): return None
+        if not(self.uuid_file.parents[0].exists()):
+            self.uuid_file.parents[0].mkdir(parents=True)
         data = edict({'uuid':[],'config':[]})
         write_uuid_file(self.uuid_file,data)
 
     def add_uuid(self,uuid,config,overwrite=False,skips=None):
         self.add_uuid_config_pair(uuid,config,overwrite,skips=skips)
+
+    def read_uuid(self,cfg):
+        return self.get_uuid_from_config(exp_config)
 
     def get_uuid(self,exp_config,uuid=None,skips=None):
         uuid_cfg = self.get_uuid_from_config(exp_config,skips=skips)

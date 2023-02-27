@@ -90,7 +90,7 @@ def get_fixed_args(args):
         slurm_args[sbatch_key] = args[args_key]
     return slurm_args
 
-def run_launch_files(files,out_files):
+def run_launch_files(files,out_files,unique=False):
     slurm_ids = []
     for fn,out_file in zip(files,out_files):
         args = ["sbatch",fn]
@@ -103,7 +103,8 @@ def run_launch_files(files,out_files):
             slurm_id = str(-1)
         print("Slurm ID: %s\nOutput: %s" % (slurm_id,out_file))
         slurm_ids.append(slurm_id)
-        time.sleep(4) # don't overwrite the cache of the launched subprocess
+        if not(unique):
+            time.sleep(4) # don't overwrite the cache of the launched subprocess
     return slurm_ids
 
 def save_launch_info(base,uuid_s,name,ids,files,pargs):
@@ -140,3 +141,11 @@ def save_json(fn,pyobj):
     with open(fn, "w") as outfile:
         outfile.write(json_object)
 
+def get_job_names(args):
+    names = []
+    nprocs = (args.nexps-1)//args.nexps_pp+1
+    for proc_i in range(nprocs):
+        job_start = proc_i * args.nexps_pp
+        name_i = "%s_dispatch_%d" % (args.job_id,job_start)
+        names.append(name_i)
+    return names

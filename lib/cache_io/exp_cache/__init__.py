@@ -9,6 +9,9 @@ import shutil,os,json,tqdm
 import pandas as pd
 from pathlib import Path
 
+# -- faster "to_records" --
+from joblib import Parallel, delayed
+from tqdm_joblib import tqdm_joblib # things are still slow
 
 from tqdm import tqdm # things are slow.
 from functools import partialmethod
@@ -152,6 +155,35 @@ class ExpCache():
             if res is None: continue
             self.write_results(uuid,res)
 
+    def append_raw_fast(self,uuids,configs,results):
+        """
+
+        runs append_raw but only checks uuid uniqueness and overwrites all values
+
+        """
+
+        # -- (1) Filter by existing uuid --
+        data = self.uuid_cache.data
+        uuids_f,configs_f,results_f = [],[],[]
+        for (uuid,cfg,res) in zip(uuids,configs,results):
+            if uuid in data['uuid']: continue
+            if not(self.results_exists(uuid)): continue
+            uuids_f.append(uuid)
+            configs_f.append(cfg)
+            results_f.append(res)
+
+        # -- (2) append new (uuids,cfgs) --
+        uuids = data['uuid'] + uuids_f
+        configs = data['config'] + configs_f
+        uuid_data = edict({'uuid':uuids,'config':configs})
+        self.uuid_cache.write_uuid_file(uuid_data)
+
+        # -- (3) write new results --
+        for uuid,res in zip(uuids_f,results_f):
+            if res is None: continue
+            self.write_results(uuid,res)
+
+
     def load_raw(self,skip_empty=True):
         uuids = []
         configs = []
@@ -236,6 +268,48 @@ class ExpCache():
 
     def load_flat_records(self,exps,save_agg=None,clear=False):
         return self.to_records(exps,save_agg,clear)
+
+    def to_records_fast(self,save_agg=None,clear=False):
+        """
+
+        Load records quickly without checking caches each time.
+
+        """
+        # -- [optional] check & rtn if saved --
+        records = self._load_agg_records(save_agg,clear)
+        if not(records is None):
+            return records
+
+        # -- gather uuids,exps --
+        uuids = self.uuid_cache.data['uuid']
+        exps = self.uuid_cache.data['config']
+
+        # -- def parallel fxn --
+        def append(cfg,uuid):
+            record = []
+            # uuid = self.uuid_cache.read_uuid(cfg) # not allowed to optionally write.
+            assert uuid != -1,"All uuids must exist for fast read to work."
+            results = self.load_exp(cfg)
+            if results is None:
+                print(uuid,flush=True)
+                return []
+            self.append_record(record,uuid,cfg,results)
+            return record[0]
+
+        # -- launch parallel --
+        # uuids = self.uuid_cache.data['uuid']
+        # cfgs = self.uuid_cache.data['config']
+        E = len(exps)
+        append_d = delayed(append)
+        with tqdm_joblib(desc="Loading Experiment Results", total=E) as progress_bar:
+            records = Parallel(n_jobs=8)(append_d(exp,uuid) for exp,uuid in zip(exps,uuids))
+        records = pd.concat(records)
+        records.reset_index(inplace=True,drop=True)
+
+        # -- [optional] save agg records --
+        self._save_agg_records(records,save_agg)
+
+        return records
 
     def to_records(self,exps,save_agg=None,clear=False):
         """
@@ -427,6 +501,11 @@ class ExpCache():
         if not results_path.exists(): return None
         results = self.read_results_file(results_path,uuid)
         return results
+
+    def results_exists(self,uuid):
+        uuid_path = self.root / Path(uuid)
+        results_path = uuid_path / "results.pkl"
+        return results_path.exists()
 
     def write_results(self,uuid,results):
         uuid_path = self.root / Path(uuid)

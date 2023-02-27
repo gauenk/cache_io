@@ -19,6 +19,7 @@ Copy one cache name to another.
     cache_io.copy.enames("a","a","b","b",exps)
 """
 
+import tqdm
 from .exp_cache import ExpCache
 from .exps import get_exps
 
@@ -27,6 +28,28 @@ def enames(name0,version0,name1,version1,exps=None,
     src = ExpCache(name0,version0)
     dest = ExpCache(name1,version1)
     exp_cache(src,dest,exps,overwrite,skip_empty)
+
+def exp_cache_very_fast(src_list,dest,version,skip_results=False):
+    """
+    Copy all from src to dest without checks. 
+    Much faster. More dangerous. #YOLO!
+    """
+    uuids,cfgs,results = [],[],[]
+    for src_name in tqdm.tqdm(src_list):
+        src = ExpCache(src_name,version)
+        uuids_i,cfgs_i,results_i = src.load_raw_fast(skip_results)
+        uuids.extend(uuids_i)
+        cfgs.extend(cfgs_i)
+        results.extend(results_i)
+    dest.append_raw_fast(uuids,cfgs,results)
+
+def exp_cache_fast(src,dest,skip_results=False):
+    """
+    Copy all from src to dest without checks. 
+    Much faster. More dangerous. #YOLO!
+    """
+    uuids,cfgs,results = src.load_raw_fast(skip_results)
+    dest.append_raw_fast(uuids,cfgs,results)
 
 def exp_cache(src,dest,exps=None,overwrite=False,skip_empty=True):
     """

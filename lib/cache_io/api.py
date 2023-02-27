@@ -19,7 +19,7 @@ from . import slurm
 def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
              records_fn=None,records_reload=True,skip_loop=False,verbose=True,
              einds=None,clear=False,uuids=None,
-             enable_dispatch=None,merge_dispatch=False):
+             enable_dispatch=None,merge_dispatch=False,to_records_fast=False):
 
     # -- get cache info --
     name,version = cache_info(exp_file_or_list,name=name,version=version)
@@ -79,7 +79,11 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
             cache.save_exp(uuid,exp,results) # save to cache
 
     # -- records --
-    records = cache.to_records(exps,records_fn,records_reload)
+    if to_records_fast:
+        records = cache.to_records_fast(records_fn,records_reload)
+    else:
+        records = cache.to_records(exps,records_fn,records_reload)
+
     return records
 
 def load_results(exps,name,version,records_fn=None,records_reload=True):
