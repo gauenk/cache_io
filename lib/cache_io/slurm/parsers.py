@@ -18,7 +18,7 @@ def process_parser():
     parser.add_argument('--start',type=int,default=0,
                         help="Starting Experiment Index")
     parser.add_argument('--end',type=int,default=-1,
-                        help="Ending Experiment Index")
+                        help="Ending Experiment Index (exclusive)")
     parser.add_argument('--clear',action="store_true")
     parser.add_argument('--name',type=str,default=None)
     args = parser.parse_known_args()[0]
