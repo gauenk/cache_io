@@ -69,11 +69,11 @@ def main():
 
     # -- collect configs from paths --
     uuids = args.uuids
-    raw = args.raw or (len(uuids) == 1)
     if len(uuids) == 0:
         print("No uuids selected so printing UUID Database")
         uuids = cache.data['uuid']
         if args.lim > 0: uuids = uuids[:args.lim]
+    raw = args.raw or (len(uuids) == 1)
 
     # -- view only uuids --
     if args.only_uuids:
