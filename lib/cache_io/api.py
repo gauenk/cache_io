@@ -38,7 +38,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
     if clear: cache.clear()
 
     # -- filter experiments --
-    if not(einds is None): 
+    if not(einds is None):
         exps = [exps[i] for i in einds]
         if not(uuids is None):
             uuids = [uuids[i] for i in einds]
