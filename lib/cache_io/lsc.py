@@ -68,11 +68,15 @@ def main():
         exit()
 
     # -- collect configs from paths --
+    cfgs = []
     uuids = args.uuids
     if len(uuids) == 0:
         print("No uuids selected so printing UUID Database")
         uuids = cache.data['uuid']
-        if args.lim > 0: uuids = uuids[:args.lim]
+        cfgs = cache.data['config']
+        if args.lim > 0:
+            uuids = uuids[:args.lim]
+            cfgs = cfgs[:args.lim]
     raw = args.raw or (len(uuids) == 1)
 
     # -- view only uuids --
@@ -81,7 +85,8 @@ def main():
         return
 
     # -- load configs --
-    cfgs = cache.get_config_from_uuid_list(uuids)
+    if len(cfgs) == 0:
+        cfgs = cache.get_config_from_uuid_list(uuids)
 
     if raw:
         for uuid,cfg in zip(uuids,cfgs):

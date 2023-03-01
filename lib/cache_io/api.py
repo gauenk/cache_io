@@ -18,7 +18,7 @@ from . import slurm
 
 def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
              records_fn=None,records_reload=True,skip_loop=False,verbose=True,
-             einds=None,clear=False,uuids=None,
+             einds=None,clear=False,uuids=None,preset_uuids=False,
              enable_dispatch=None,merge_dispatch=False,to_records_fast=False):
 
     # -- get cache info --
@@ -46,6 +46,11 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
     # -- init uuids if needed --
     if uuids is None:
         uuids = [None for _ in exps]
+
+    # -- preset uuids before running exp grid --
+    if preset_uuids:
+        for exp_num,exp in enumerate(exps):
+            cache.get_uuid(exp,uuid=uuids[exp_num])
 
     # -- run exps --
     nexps = len(exps)

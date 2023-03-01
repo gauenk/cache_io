@@ -23,7 +23,7 @@ from .helpers import get_job_names
 def dispatch_process(merge_flag,einds,clear,name,version,skip_loop,exps):
     # if we merge, we don't run the process
     script_args = script_parser()
-    skip_loop = script_args.skip_loop
+    skip_loop = skip_loop or script_args.skip_loop
     if merge_flag or script_args.merge_cache:
         merge(script_args,name,version,exps)
         skip_loop = script_args.skip_loop # possibly False if merging
