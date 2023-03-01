@@ -37,7 +37,7 @@ def run_launcher(base):
 
     ```
     sbatch_py <script_name.py> <num_of_experiments> <experiments_per_proc>
-    ```    
+    ```
 
     This function is called by the "sbatch_py" script [aka cmdline.py].
 
