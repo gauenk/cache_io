@@ -277,7 +277,7 @@ class ExpCache():
     def load_flat_records(self,exps,save_agg=None,clear=False):
         return self.to_records(exps,save_agg,clear)
 
-    def to_records_fast(self,save_agg=None,clear=False):
+    def to_records_fast(self,save_agg=None,clear=False,results_fxn=None):
         """
 
         Load records quickly without checking caches each time.
@@ -288,6 +288,9 @@ class ExpCache():
         if not(records is None):
             return records
 
+        # -- [optional] post-process records --
+        results_fxn = lambda x: x if results_fxn is None else results_fxn
+
         # -- gather uuids,exps --
         uuids = self.uuid_cache.data['uuid']
         exps = self.uuid_cache.data['config']
@@ -297,9 +300,11 @@ class ExpCache():
             record = []
             # uuid = self.uuid_cache.read_uuid(cfg) # not allowed to optionally write.
             assert uuid != -1,"All uuids must exist for fast read to work."
-            results = self.load_exp(cfg)
+            # results = self.load_exp(cfg)
+            results = self.read_results(uuid)
+            results = results_fxn(results)
             if results is None:
-                print(uuid,flush=True)
+                print("Missing results for uuid [%d]" % str(uuid),flush=True)
                 return []
             self.append_record(record,uuid,cfg,results)
             return record[0]
@@ -310,7 +315,7 @@ class ExpCache():
         E = len(exps)
         append_d = delayed(append)
         with tqdm_joblib(desc="Loading Experiment Results", total=E) as progress_bar:
-            records = Parallel(n_jobs=8)(append_d(exp,uuid) for exp,uuid in zip(exps,uuids))
+            records = Parallel(n_jobs=16)(append_d(exp,uuid) for exp,uuid in zip(exps,uuids))
         records = pd.concat(records)
         records.reset_index(inplace=True,drop=True)
 
@@ -319,7 +324,7 @@ class ExpCache():
 
         return records
 
-    def to_records(self,exps,save_agg=None,clear=False):
+    def to_records(self,exps,save_agg=None,clear=False,results_fxn=None):
         """
         Load records but flatten exp configs against
         experiments. Requires "results" to be have
@@ -331,12 +336,19 @@ class ExpCache():
         if not(records is None):
             return records
 
+        # -- [optional] post-process records --
+        print(results_fxn)
+        if results_fxn is None:
+            results_fxn = lambda x: x
+        print(results_fxn)
+
         # -- load each record --
         records = []
         for config in tqdm(exps):
             results = self.load_exp(config)
             uuid = self.get_uuid(config)
             if results is None: continue
+            results = results_fxn(results)
             self.append_to_flat_record(records,uuid,config,results)
         records = pd.concat(records)
         records.reset_index(inplace=True,drop=True)

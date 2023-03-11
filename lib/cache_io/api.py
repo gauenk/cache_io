@@ -5,8 +5,10 @@ Functons for API
 """
 
 # -- printing --
+import tqdm
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
+import uuid as uuid_gen
 
 # -- cache api --
 from .exps import read,get_exps
@@ -19,7 +21,8 @@ from . import slurm
 def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
              records_fn=None,records_reload=True,skip_loop=False,verbose=True,
              einds=None,clear=False,uuids=None,preset_uuids=False,
-             enable_dispatch=None,merge_dispatch=False,to_records_fast=False):
+             enable_dispatch=None,merge_dispatch=False,to_records_fast=False,
+             results_fxn=None):
 
     # -- get cache info --
     name,version = cache_info(exp_file_or_list,name=name,version=version)
@@ -85,9 +88,9 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
 
     # -- records --
     if to_records_fast:
-        records = cache.to_records_fast(records_fn,records_reload)
+        records = cache.to_records_fast(records_fn,records_reload,results_fxn=results_fxn)
     else:
-        records = cache.to_records(exps,records_fn,records_reload)
+        records = cache.to_records(exps,records_fn,records_reload,results_fxn=results_fxn)
 
     return records
 
@@ -119,11 +122,43 @@ def dispatch(enable_dispatch,*args):
         raise ValueError("Uknown dispatch type [%s]" % enable_dispatch)
     return outs
 
-def get_uuids(exps,name,version="v1"):
-    # -- open cache --
-    cache = ExpCache(name,version)
+
+# def get_uuids(cfgs,cache):
+#     uuids = []
+#     for cfg in cfgs:
+#         uuid = get_uuid(cfg,cache)
+#         uuids.append(uuid)
+#     return uuids
+
+def get_uuids(exps,cache_or_name,version="v1",no_config_check=False):
+
+    # -- open or assign cache --
+    if isinstance(cache_or_name,ExpCache):
+        cache = cache_or_name
+    else:
+        cache = ExpCache(cache_or_name,version)
+
+    # -- return already assigned --
+    if len(exps) == len(cache.uuid_cache.data['config']):
+        exps = cache.uuid_cache.data['config']
+        uuids = cache.uuid_cache.data['uuid']
+        return exps,uuids
+    if len(cache.uuid_cache.data['config']) > 0 and no_config_check:
+        print("Warning: if no_config_check we want an empty uuid_cache.")
+
+    # -- read uuids --
     uuids = []
-    for exp in exps:
-        uuids.append(cache.get_uuid(exp))
-    return uuids
+    for exp in tqdm.tqdm(exps):
+        if no_config_check:
+            uuid = str(uuid_gen.uuid4())
+        else:
+            uuid = cache.get_uuid(exp)
+        uuids.append(uuid)
+
+    # -- assign uuids --
+    if no_config_check:
+        print("Writing.")
+        cache.uuid_cache.write_uuid_file({"config":exps,"uuid":uuids})
+
+    return exps,uuids
 

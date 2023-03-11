@@ -24,9 +24,10 @@ def dispatch_process(merge_flag,einds,clear,name,version,skip_loop,exps):
     # if we merge, we don't run the process
     script_args = script_parser()
     skip_loop = script_args.skip_loop or skip_loop
+
     if merge_flag or script_args.merge_cache:
         merge(script_args,name,version,exps)
-        skip_loop = script_args.skip_loop # possibly False if merging
+        skip_loop = skip_loop or script_args.skip_loop # possibly False if merging
     elif script_args.launched_with_slurm is True:
         einds,clear,name = run_process(einds,clear,name,version,exps)
     return einds,clear,name,skip_loop
