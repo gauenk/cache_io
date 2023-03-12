@@ -18,7 +18,7 @@ from .exp_cache import ExpCache
 # -- dispatch options --
 from . import slurm
 
-def run_exps(exp_file_or_list,exp_fxn,name=None,version=None,clear_fxn=None,
+def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
              records_fn=None,records_reload=True,skip_loop=False,verbose=True,
              einds=None,clear=False,uuids=None,preset_uuids=False,
              enable_dispatch=None,merge_dispatch=False,to_records_fast=False,
