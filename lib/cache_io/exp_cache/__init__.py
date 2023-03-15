@@ -292,7 +292,8 @@ class ExpCache():
             return records
 
         # -- [optional] post-process records --
-        results_fxn = lambda x: x if results_fxn is None else results_fxn
+        if results_fxn is None:
+            results_fxn = lambda x: x
 
         # -- gather uuids,exps --
         uuids = self.uuid_cache.data['uuid']
@@ -305,10 +306,10 @@ class ExpCache():
             assert uuid != -1,"All uuids must exist for fast read to work."
             # results = self.load_exp(cfg)
             results = self.read_results(uuid)
-            results = results_fxn(results)
             if results is None:
                 print("Missing results for uuid [%d]" % str(uuid),flush=True)
                 return []
+            results = results_fxn(results)
             self.append_record(record,uuid,cfg,results)
             return record[0]
 
@@ -340,10 +341,8 @@ class ExpCache():
             return records
 
         # -- [optional] post-process records --
-        print(results_fxn)
         if results_fxn is None:
             results_fxn = lambda x: x
-        print(results_fxn)
 
         # -- load each record --
         records = []
