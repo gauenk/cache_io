@@ -17,9 +17,11 @@ Copy one cache name to another.
 
     exps = get_list_of_experiments()
     cache_io.copy.enames("a","a","b","b",exps)
+
 """
 
 import tqdm
+import shutil
 from .exp_cache import ExpCache
 from .exps import get_exps
 
@@ -29,22 +31,56 @@ def enames(name0,version0,name1,version1,exps=None,
     dest = ExpCache(name1,version1)
     exp_cache(src,dest,exps,overwrite,skip_empty)
 
-def exp_cache_very_fast(src_list,dest,version,skip_results=False):
+def exp_cache_very_fast(src_list,dst,version,skip_results=False):
     """
-    Copy all from src to dest without checks. 
+    Copy all from src to dst without checks. 
     Much faster. More dangerous. #YOLO!
     """
     print("Very Fast.")
     print("skip_results: ",skip_results)
+    if len(dst.uuid_cache.data['config']) > 0:
+        print ("Warning: Destination should be an empty or the uuids should match.")
+
+    # -- reset --
+    reset = False
+    if reset:
+        dst.uuid_cache.write_uuid_file({"config":[],"uuid":[]})
+
+    # -- copy each source cache --
     uuids,cfgs,results = [],[],[]
+    cnt = 0
     for src_name in tqdm.tqdm(src_list):
         src = ExpCache(src_name,version)
-        uuids_i,cfgs_i,results_i = src.load_raw_fast(skip_results)
-        uuids.extend(uuids_i)
-        cfgs.extend(cfgs_i)
-        results.extend(results_i)
-    # print(len(uuids))
-    dest.append_raw_fast(uuids,cfgs,results)
+        uuid_data = src.uuid_cache.data
+        uuids = uuid_data['uuid']
+        cfgs = uuid_data['config']
+        cnt += copy_results(dst,src.root,uuids,cfgs)
+    print("Total Number of Exps Copied: %d" % cnt)
+
+def copy_results(dst,src_root,src_uuids,src_cfgs):
+
+    # -- include all (uuid,cfg) pairs --
+    dst_cfgs = dst.uuid_cache.data['config']
+    dst_uuids = dst.uuid_cache.data['uuid']
+    for uuid,cfg in zip(src_uuids,src_cfgs):
+        if uuid in dst_uuids: continue
+        dst_uuids.append(uuid)
+        dst_cfgs.append(cfg)
+    dst.uuid_cache.write_uuid_file({"config":dst_cfgs,"uuid":dst_uuids})
+
+    # -- copy the uuid results --
+    cnt = 0
+    for uuid in dst_uuids:
+        src_path = src_root / uuid
+        dst_path = dst.root / uuid
+        if not(src_path.exists()):
+            continue
+        if dst_path.exists(): 
+            print("Destination [%s] exists. Skipping." % dst_path)
+            continue
+        cnt += 1
+        shutil.copytree(src_path,dst_path)
+    return cnt
 
 def exp_cache_fast(src,dest,skip_results=False):
     """

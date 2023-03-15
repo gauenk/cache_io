@@ -6,6 +6,7 @@ Print only diffs from all configs
 
 # -- unique --
 import numpy as np
+from easydict import EasyDict as edict
 
 # -- uuids --
 from .exp_cache import ExpCache
@@ -17,6 +18,10 @@ pp = pprint.PrettyPrinter(indent=4)
 def run(cfgs,cache_name,cache_version="v1"):
     cache = ExpCache(cache_name,cache_version)
     uuids = get_uuids(cfgs,cache)
+    diffs = get_diffs(cfgs)
+    print_loop(cfgs,uuids,diffs)
+
+def pair(cfgs,uuids):
     diffs = get_diffs(cfgs)
     print_loop(cfgs,uuids,diffs)
 
@@ -56,8 +61,56 @@ def get_diffs(cfgs):
 
     # -- unique --
     diffs = np.unique(diffs)
-    print(diffs)
+    # print(diffs)
     return diffs
+
+def find_dups(cfgs,uuids):
+
+    # -- get diff fields --
+    diffs = get_diffs(cfgs)
+
+    # -- only diff fields
+    dcfgs = [edict() for _ in cfgs]
+    for i,cfg in enumerate(cfgs):
+        for k in cfg:
+            dcfgs[i][k] = cfg[k]
+
+    # -- pairwise difference --
+    L = len(cfgs)
+    pairs = np.zeros((L,L),dtype=np.bool)
+    for i,cfg_i in enumerate(dcfgs):
+        for j,cfg_j in enumerate(dcfgs[:i]):
+            if i != j:
+                cmp_ij = match(cfg_i,cfg_j)
+            else:
+                cmp_ij = False
+            pairs[i,j] = cmp_ij
+            pairs[j,i] = pairs[i,j]
+
+    # -- find duplicates (if any) --
+    dups = {}
+    for i,uuid in enumerate(uuids):
+        inds_i = np.where(pairs[i] > 0)[0].tolist()
+        # if i < 10:
+        #     print(inds_i)
+        #     print("i,inds_i.shape: ",i,inds_i.shape)
+        dups[uuid] = []
+        for ind in inds_i:
+            if ind == i: continue
+            dups[uuid].append(uuids[ind])
+
+    # -- drop uuids if empty --
+    pairs = [(uuid,u_dups) for uuid,u_dups in dups.items()]
+    for (uuid,u_dups) in pairs:
+        if len(u_dups) == 0:
+            del dups[uuid]
+
+    return dups
+
+def match(cfg0,cfg1):
+    diffs = compare(cfg0,cfg1)
+    diffs += compare(cfg1,cfg0)
+    return len(diffs) == 0
 
 def compare(cfg0,cfg1):
     diffs = []

@@ -114,7 +114,7 @@ class UUIDCache():
         self.add_uuid_config_pair(uuid,config,overwrite,skips=skips)
 
     def read_uuid(self,cfg):
-        return self.get_uuid_from_config(exp_config)
+        return self.get_uuid_from_config(cfg)
 
     def get_uuid(self,exp_config,uuid=None,skips=None):
         uuid_cfg = self.get_uuid_from_config(exp_config,skips=skips)
