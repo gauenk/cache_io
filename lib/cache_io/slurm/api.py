@@ -27,7 +27,7 @@ def dispatch_process(merge_flag,einds,clear,name,version,skip_loop,exps):
     if merge_flag or script_args.merge_cache:
         merge(script_args,name,version,exps)
         skip_loop = script_args.skip_loop # possibly False if merging
-    elif script_args.launched_with_slurm is True:
+    elif script_args.dispatch is True:
         einds,clear,name = run_process(einds,clear,name,version,exps)
     return einds,clear,name,skip_loop
 
@@ -42,11 +42,11 @@ def run_launcher(base):
     This function is called by the "sbatch_py" script [aka cmdline.py].
 
     Functionally, it creates a list of shell files formatted per the parse arguemnts.
-    Then it executes each of them with the sbatch command.
+    Then it executes each of them with the sbatch create.
 
     """
 
-    # -- create user args --
+    # -- command user args --
     args = launcher_parser()
     print("[Launcher] Running: ",args)
 
@@ -58,7 +58,8 @@ def run_launcher(base):
     unique = args.unique_names
     proc_args = get_process_args(args)
     fixed_args = get_fixed_args(args)
-    files,out_fns,uuid_s = create_launch_files(proc_args,fixed_args,launch_dir,output_dir)
+    files,out_fns,uuid_s = create_launch_files(proc_args,fixed_args,
+                                               launch_dir,output_dir)
     print("UUID: ",uuid_s)
 
     # -- launch files --
@@ -78,12 +79,12 @@ def run_process(einds,clear,name,version,exps):
     with dispatch:
     ```
     sbatch_py <script_name.py> <num_of_experiments> <experiments_per_proc>
-    ```    
+    ```
 
     without dispatch:
     ```
     <script_name.py> <num_of_experiments> <experiments_per_proc>
-    ```    
+    ```
     """
     args = process_parser()
     print("[Process] Running: ",args)
@@ -105,7 +106,7 @@ def merge(args,name,version,exps):
 
     ```
     sbatch_py <script_name.py> <num_of_experiments> <experiments_per_proc> -U
-    ```    
+    ```
 
     B. Merge the outputs to the original cache.
 
@@ -152,4 +153,4 @@ def merge(args,name,version,exps):
         if args.fast:
             exp_cache_copy_fast(cache_p,cache,args.merge_skip_results)
         else:
-            exp_cache_copy(cache_p,cache,exps,overwrite=overwrite,skip_empty=skip_empty)    
+            exp_cache_copy(cache_p,cache,exps,overwrite=overwrite,skip_empty=skip_empty)

@@ -95,8 +95,9 @@ def script_parser():
     # -- merging --
     desc = 'This parser _always_ runs when enable_dispatch="slum". '
     desc += 'Determines the scripts function: [mering, processing, or launching]'
+    prog = 'Parser which equips a script to be run by with the Python Slurm laucher'
     parser = argparse.ArgumentParser(
-        prog = 'Parser which equips a script to be run by with the Python Slurm laucher',
+        prog = prog,
         description = desc,
         epilog = 'Happy Hacking')
 
@@ -109,7 +110,8 @@ def script_parser():
                         help="Ignore results when merging cache [already copied].")
     parser.add_argument('--merge_overwrite',action="store_true",
                         help="Write over the uuid,results of the source cache")
-    parser.add_argument('--launched_with_slurm',action="store_true")
+    # parser.add_argument('--launched_with_slurm',action="store_true")
+    parser.add_argument('--dispatch',action="store_true")
     parser.add_argument('--skip_loop',action="store_true")
     parser.add_argument('-J','--job_id',type=str,default=None)
     parser.add_argument('--nexps',type=int,default=None)
@@ -121,4 +123,4 @@ def script_parser():
     args = parser.parse_known_args()[0]
     args = edict(vars(args))
     return args
-    
+
