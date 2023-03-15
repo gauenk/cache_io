@@ -106,6 +106,9 @@ class ExpCache():
             if VERBOSE:
                 print(f"WARNING: Not writing. UUID [{uuid}] exists @ [{self.root}]")
 
+    def read_uuid(self,config):
+        return self.uuid_cache.read_uuid(config)
+
     def get_uuid(self,config,uuid=None,skips=None):
         return self.uuid_cache.get_uuid(config,uuid=uuid,skips=skips)
 
