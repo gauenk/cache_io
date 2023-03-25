@@ -6,6 +6,8 @@ Functons for API
 
 # -- printing --
 import tqdm
+import copy
+dcopy = copy.deepcopy
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 import uuid as uuid_gen
@@ -83,7 +85,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
         # -- run exp --
         if results is None: # check if no result
             exp.uuid = uuid
-            results = exp_fxn(exp)
+            results = exp_fxn(dcopy(exp))
             cache.save_exp(uuid,exp,results) # save to cache
 
     # -- records --
