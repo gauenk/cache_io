@@ -109,6 +109,14 @@ class ExpCache():
     def read_uuid(self,config):
         return self.uuid_cache.read_uuid(config)
 
+    # def get_uuids(self,configs,uuids=None,skips=None):
+    #     out_uuids = []
+    #     for i,config in enumerate(configs):
+    #         uuid = None if uuids is None else uuids[i]
+    #         uuid = self.get_uuid(config,uuid=uuid,skips=skips)
+    #         out_uuids.append(uuid)
+    #     return uuid
+
     def get_uuid(self,config,uuid=None,skips=None):
         return self.uuid_cache.get_uuid(config,uuid=uuid,skips=skips)
 

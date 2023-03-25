@@ -122,14 +122,6 @@ def dispatch(enable_dispatch,*args):
         raise ValueError("Uknown dispatch type [%s]" % enable_dispatch)
     return outs
 
-
-# def get_uuids(cfgs,cache):
-#     uuids = []
-#     for cfg in cfgs:
-#         uuid = get_uuid(cfg,cache)
-#         uuids.append(uuid)
-#     return uuids
-
 def get_uuids(exps,cache_or_name,version="v1",no_config_check=False):
 
     # -- open or assign cache --
@@ -139,12 +131,12 @@ def get_uuids(exps,cache_or_name,version="v1",no_config_check=False):
         cache = ExpCache(cache_or_name,version)
 
     # -- return already assigned --
-    if len(exps) == len(cache.uuid_cache.data['config']):
-        exps = cache.uuid_cache.data['config']
-        uuids = cache.uuid_cache.data['uuid']
-        return exps,uuids
-    if len(cache.uuid_cache.data['config']) > 0 and no_config_check:
-        print("Warning: if no_config_check we want an empty uuid_cache.")
+    # if len(exps) == len(cache.uuid_cache.data['config']):
+    #     exps = cache.uuid_cache.data['config']
+    #     uuids = cache.uuid_cache.data['uuid']
+    #     return exps,uuids
+    # if len(cache.uuid_cache.data['config']) > 0 and no_config_check:
+    #     print("Warning: if no_config_check we want an empty uuid_cache.")
 
     # -- read uuids --
     uuids = []
