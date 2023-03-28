@@ -10,7 +10,7 @@ parameters for training with stages
 Example:
 
   stage_0: [epochs 0-39]
-  stage_1: 
+  stage_1:
     - [epochs 40 - 49] using parameters 0
     - [epochs 40 - 49] using parameters 1
   stage_2:
@@ -32,12 +32,18 @@ from .exps import get_exps
 from .exps import load_edata
 
 def run(fn,cache_name,cache_version="v1",
-        load_complete=False,stage_select=-1):
+        load_complete=True,stage_select=0,reset=False):
 
     # -- open files --
     stages = read(fn)
     chkpt_root = stages.chkpt_root
     cache = ExpCache(cache_name,cache_version)
+    if reset: cache.clear()
+    if len(cache.uuid_cache.data['config']) > 0:
+        #print("Skip reloading exps since config is not empty.")
+        uuids = cache.uuid_cache.data['uuid']
+        cfgs = cache.uuid_cache.data['config']
+        return cfgs,uuids
 
     # -- build bases --
     base = load_train_base(stages)
@@ -88,7 +94,7 @@ def run_base(base,stages,cache,chkpt_root,
 
             # -- check if experiment stage complete [checkpoint dir] --
             complete = check_stage_complete(chkpt_root,uuid,cfg.nepochs)
-            if not(load_complete) and complete: continue # only load incomplete stages 
+            if not(load_complete) and complete: continue # only load incomplete stages
 
             # -- mange previous stage --
             if stage_i > 0:
@@ -104,7 +110,8 @@ def run_base(base,stages,cache,chkpt_root,
                 # -- copy if previous is complete --
                 rtn = copy_checkpoint(chkpt_root,uuid,uuid_prev,cfg_prev.nepochs)
                 if rtn is False:
-                    print("Warning: Failed to copy [stage,exp]: [%d,%d]" % (stage_i,exp_i))
+                    msg = "Warning: Failed to copy [stage,exp]: [%d,%d]"
+                    print(msg % (stage_i,exp_i))
 
             # -- add exp to result --
             train_exps.append(cfg)
