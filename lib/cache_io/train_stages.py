@@ -26,13 +26,14 @@ import copy
 dcopy = copy.deepcopy
 import yaml
 from pathlib import Path
+import uuid as uuid_gen
 from easydict import EasyDict as edict
 from .exp_cache import ExpCache
 from .exps import get_exps
 from .exps import load_edata
 
 def run(fn,cache_name,cache_version="v1",
-        load_complete=True,stage_select=0,reset=False):
+        load_complete=True,stage_select=0,reset=False,fast=True):
 
     # -- open files --
     stages = read(fn)
@@ -47,20 +48,23 @@ def run(fn,cache_name,cache_version="v1",
 
     # -- build bases --
     base = load_train_base(stages)
-    stages.mesh['cfg'] = base
-    bases = load_edata(stages.mesh)
+    bases = []
+    for key in stages:
+        if "mesh" in key:
+            stages[key]['cfg'] = dcopy(base)
+            bases += load_edata(stages[key])
 
     # -- run for each base config --
     exps,uuids = [],[]
     for base in bases:
         exps_b,uuids_b = run_base(base,stages,cache,chkpt_root,
-                                  load_complete,stage_select)
+                                  load_complete,stage_select,fast)
         exps += exps_b
         uuids += uuids_b
     return exps,uuids
 
 def run_base(base,stages,cache,chkpt_root,
-             load_complete=False,stage_select=-1):
+             load_complete=False,stage_select=-1,fast=True):
 
     # -- num stages --
     nstages = get_num(stages,"stage_%d")
@@ -101,7 +105,7 @@ def run_base(base,stages,cache,chkpt_root,
 
                 # -- load info --
                 cfg_prev = get_previous_config(base,stage_prev,exp.prev)
-                uuid_prev = get_uuid(cfg_prev,cache)
+                uuid_prev = get_uuid(cfg_prev,cache,nocheck=fast)
 
                 # -- [optional] check complete --
                 # complete = check_stage_complete(chkpt_root,uuid_prev,cfg_prev.nepochs)
@@ -124,8 +128,12 @@ def check_stage_complete(root,uuid,nepochs):
     chkpt_fn = get_checkpoint(Path(root)/uuid,uuid,nepochs-1)
     return chkpt_fn.exists()
 
-def get_uuid(cfg,cache):
-    return cache.get_uuid(cfg)
+def get_uuid(cfg,cache,nocheck=True):
+    if nocheck:
+        uuid = str(uuid_gen.uuid4())
+    else:
+        uuid = cache.get_uuid(cfg)
+    return uuid
 
 def create_config(base,exp):
     cfg = dcopy(base)
