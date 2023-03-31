@@ -34,7 +34,13 @@ def read(fn):
     return data
 
 def unpack(edata):
+    """
 
+    Groups v.s. Lists:
+    - Groups are meshed together but Lists are appended to all configs
+
+
+    """
     cfg = edict(edata['cfg']) if 'cfg' in edata else edict()
     mutexs = [v for g,v in edata.items() if "mutex" in g]
     groups = [v for g,v in edata.items() if "group" in g]

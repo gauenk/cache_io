@@ -175,17 +175,15 @@ class ExpCache():
 
         # -- (1) Filter by existing uuid --
         data = self.uuid_cache.data
-        # print(data['uuid'])
         uuids_f,configs_f,results_f = [],[],[]
         for (uuid,cfg,res) in zip(uuids,configs,results):
-            if uuid in data['uuid']: continue
-            # if not(self.results_exists(uuid)): continue
+            # if uuid in data['uuid']: continue
+            if self.results_exists(uuid): continue
             uuids_f.append(uuid)
             configs_f.append(cfg)
             results_f.append(res)
 
         # -- (2) append new (uuids,cfgs) --
-        # print(len(uuids_f))
         uuids = data['uuid'] + uuids_f
         configs = data['config'] + configs_f
         uuid_data = edict({'uuid':uuids,'config':configs})
@@ -195,7 +193,6 @@ class ExpCache():
         for uuid,res in zip(uuids_f,results_f):
             if res is None: continue
             self.write_results(uuid,res)
-
 
     def load_raw(self,skip_empty=True):
         uuids = []

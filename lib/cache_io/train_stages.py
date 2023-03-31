@@ -33,14 +33,17 @@ from .exps import get_exps
 from .exps import load_edata
 
 def run(fn,cache_name,cache_version="v1",
-        load_complete=True,stage_select=0,reset=False,fast=True):
+        load_complete=True,stage_select=0,
+        reset=False,fast=True,update=False):
 
     # -- open files --
     stages = read(fn)
     chkpt_root = stages.chkpt_root
     cache = ExpCache(cache_name,cache_version)
     if reset: cache.clear()
-    if len(cache.uuid_cache.data['config']) > 0:
+
+    # -- todo: check length matches loaded exps; append new exps to cache. --
+    if len(cache.uuid_cache.data['config']) > 0 and not(update):
         #print("Skip reloading exps since config is not empty.")
         uuids = cache.uuid_cache.data['uuid']
         cfgs = cache.uuid_cache.data['config']
@@ -55,16 +58,17 @@ def run(fn,cache_name,cache_version="v1",
             bases += load_edata(stages[key])
 
     # -- run for each base config --
+    nocheck = fast and not(update)
     exps,uuids = [],[]
     for base in bases:
         exps_b,uuids_b = run_base(base,stages,cache,chkpt_root,
-                                  load_complete,stage_select,fast)
+                                  load_complete,stage_select,nocheck)
         exps += exps_b
         uuids += uuids_b
     return exps,uuids
 
 def run_base(base,stages,cache,chkpt_root,
-             load_complete=False,stage_select=-1,fast=True):
+             load_complete=False,stage_select=-1,nocheck=True):
 
     # -- num stages --
     nstages = get_num(stages,"stage_%d")
@@ -105,7 +109,7 @@ def run_base(base,stages,cache,chkpt_root,
 
                 # -- load info --
                 cfg_prev = get_previous_config(base,stage_prev,exp.prev)
-                uuid_prev = get_uuid(cfg_prev,cache,nocheck=fast)
+                uuid_prev = get_uuid(cfg_prev,cache,nocheck=nocheck)
 
                 # -- [optional] check complete --
                 # complete = check_stage_complete(chkpt_root,uuid_prev,cfg_prev.nepochs)
