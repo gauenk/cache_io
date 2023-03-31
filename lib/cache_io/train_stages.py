@@ -10,7 +10,7 @@ parameters for training with stages
 Example:
 
   stage_0: [epochs 0-39]
-  stage_1: 
+  stage_1:
     - [epochs 40 - 49] using parameters 0
     - [epochs 40 - 49] using parameters 1
   stage_2:
@@ -26,35 +26,49 @@ import copy
 dcopy = copy.deepcopy
 import yaml
 from pathlib import Path
+import uuid as uuid_gen
 from easydict import EasyDict as edict
 from .exp_cache import ExpCache
 from .exps import get_exps
 from .exps import load_edata
 
 def run(fn,cache_name,cache_version="v1",
-        load_complete=False,stage_select=-1):
+        load_complete=True,stage_select=0,
+        reset=False,fast=True,update=False):
 
     # -- open files --
     stages = read(fn)
     chkpt_root = stages.chkpt_root
     cache = ExpCache(cache_name,cache_version)
+    if reset: cache.clear()
+
+    # -- todo: check length matches loaded exps; append new exps to cache. --
+    if len(cache.uuid_cache.data['config']) > 0 and not(update):
+        #print("Skip reloading exps since config is not empty.")
+        uuids = cache.uuid_cache.data['uuid']
+        cfgs = cache.uuid_cache.data['config']
+        return cfgs,uuids
 
     # -- build bases --
     base = load_train_base(stages)
-    stages.mesh['cfg'] = base
-    bases = load_edata(stages.mesh)
+    bases = []
+    for key in stages:
+        if "mesh" in key:
+            stages[key]['cfg'] = dcopy(base)
+            bases += load_edata(stages[key])
 
     # -- run for each base config --
+    nocheck = fast and not(update)
     exps,uuids = [],[]
     for base in bases:
         exps_b,uuids_b = run_base(base,stages,cache,chkpt_root,
-                                  load_complete,stage_select)
+                                  load_complete,stage_select,nocheck)
         exps += exps_b
         uuids += uuids_b
     return exps,uuids
 
 def run_base(base,stages,cache,chkpt_root,
-             load_complete=False,stage_select=-1):
+             load_complete=False,stage_select=-1,nocheck=True):
 
     # -- num stages --
     nstages = get_num(stages,"stage_%d")
@@ -84,18 +98,18 @@ def run_base(base,stages,cache,chkpt_root,
 
             # -- create full config --
             cfg = create_config(base,exp)
-            uuid = get_uuid(cfg,cache)
+            uuid = get_uuid(cfg,cache,nocheck=nocheck)
 
             # -- check if experiment stage complete [checkpoint dir] --
             complete = check_stage_complete(chkpt_root,uuid,cfg.nepochs)
-            if not(load_complete) and complete: continue # only load incomplete stages 
+            if not(load_complete) and complete: continue # only load incomplete stages
 
             # -- mange previous stage --
             if stage_i > 0:
 
                 # -- load info --
                 cfg_prev = get_previous_config(base,stage_prev,exp.prev)
-                uuid_prev = get_uuid(cfg_prev,cache)
+                uuid_prev = get_uuid(cfg_prev,cache,nocheck=False)
 
                 # -- [optional] check complete --
                 # complete = check_stage_complete(chkpt_root,uuid_prev,cfg_prev.nepochs)
@@ -104,7 +118,8 @@ def run_base(base,stages,cache,chkpt_root,
                 # -- copy if previous is complete --
                 rtn = copy_checkpoint(chkpt_root,uuid,uuid_prev,cfg_prev.nepochs)
                 if rtn is False:
-                    print("Warning: Failed to copy [stage,exp]: [%d,%d]" % (stage_i,exp_i))
+                    msg = "Warning: Failed to copy [stage,exp]: [%d,%d]"
+                    print(msg % (stage_i,exp_i))
 
             # -- add exp to result --
             train_exps.append(cfg)
@@ -117,8 +132,12 @@ def check_stage_complete(root,uuid,nepochs):
     chkpt_fn = get_checkpoint(Path(root)/uuid,uuid,nepochs-1)
     return chkpt_fn.exists()
 
-def get_uuid(cfg,cache):
-    return cache.get_uuid(cfg)
+def get_uuid(cfg,cache,nocheck=True):
+    if nocheck:
+        uuid = str(uuid_gen.uuid4())
+    else:
+        uuid = cache.get_uuid(cfg)
+    return uuid
 
 def create_config(base,exp):
     cfg = dcopy(base)
