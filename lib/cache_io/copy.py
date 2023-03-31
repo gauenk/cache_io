@@ -36,8 +36,8 @@ def exp_cache_very_fast(src_list,dst,version,skip_results=False):
     Copy all from src to dst without checks. 
     Much faster. More dangerous. #YOLO!
     """
-    print("Very Fast.")
-    print("skip_results: ",skip_results)
+    # print("Very Fast.")
+    # print("skip_results: ",skip_results)
     if len(dst.uuid_cache.data['config']) > 0:
         print ("Warning: Destination should be an empty or the uuids should match.")
 
@@ -56,6 +56,7 @@ def exp_cache_very_fast(src_list,dst,version,skip_results=False):
         cfgs = uuid_data['config']
         cnt += copy_results(dst,src.root,uuids,cfgs)
     print("Total Number of Exps Copied: %d" % cnt)
+
 
 def copy_results(dst,src_root,src_uuids,src_cfgs):
 
@@ -101,6 +102,7 @@ def exp_cache(src,dest,exps=None,overwrite=False,skip_empty=True):
             exps = get_exps(exps)
         uuids,exps,results = src.load_raw_exps(exps,skip_empty)
     if len(exps) == 0: warn_message(src)
+    # print([r is None for r in results])
     # print(uuids)
     # _dev_test(exps,results)
     dest.save_raw(uuids,exps,results,overwrite=overwrite)
