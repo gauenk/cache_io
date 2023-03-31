@@ -98,7 +98,7 @@ def run_base(base,stages,cache,chkpt_root,
 
             # -- create full config --
             cfg = create_config(base,exp)
-            uuid = get_uuid(cfg,cache)
+            uuid = get_uuid(cfg,cache,nocheck=nocheck)
 
             # -- check if experiment stage complete [checkpoint dir] --
             complete = check_stage_complete(chkpt_root,uuid,cfg.nepochs)
@@ -109,7 +109,7 @@ def run_base(base,stages,cache,chkpt_root,
 
                 # -- load info --
                 cfg_prev = get_previous_config(base,stage_prev,exp.prev)
-                uuid_prev = get_uuid(cfg_prev,cache,nocheck=nocheck)
+                uuid_prev = get_uuid(cfg_prev,cache,nocheck=False)
 
                 # -- [optional] check complete --
                 # complete = check_stage_complete(chkpt_root,uuid_prev,cfg_prev.nepochs)
