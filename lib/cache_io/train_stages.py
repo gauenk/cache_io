@@ -44,13 +44,25 @@ def run(fn,cache_name,cache_version="v1",
 
     # -- todo: check length matches loaded exps; append new exps to cache. --
     if len(cache.uuid_cache.data['config']) > 0 and not(update):
-        #print("Skip reloading exps since config is not empty.")
+        # print("Skip reloading exps since config is not empty.")
         uuids = cache.uuid_cache.data['uuid']
         cfgs = cache.uuid_cache.data['config']
         return cfgs,uuids
 
+    # -- core run --
+    exps,uuids = run_core(stages,chkpt_root,cache,fast,update,load_complete,stage_select)
+
+    # -- save again ["get_uuid" doesn't write to cache.] --
+    if fast:
+        cache.uuid_cache.write_pair(uuids,exps)
+
+    return exps,uuids
+
+def run_core(stages,chkpt_root,cache=None,fast=True,
+             update=False,load_complete=True,stage_select=-1,use_learn=True):
+
     # -- build bases --
-    base = load_train_base(stages)
+    base = load_train_base(stages,use_learn=use_learn)
     bases = []
     for key in stages:
         if "mesh" in key:
@@ -65,6 +77,7 @@ def run(fn,cache_name,cache_version="v1",
                                   load_complete,stage_select,nocheck)
         exps += exps_b
         uuids += uuids_b
+
     return exps,uuids
 
 def run_base(base,stages,cache,chkpt_root,
@@ -72,6 +85,7 @@ def run_base(base,stages,cache,chkpt_root,
 
     # -- num stages --
     nstages = get_num(stages,"stage_%d")
+    nstages = max(nstages,1)
 
     # -- accumulate experiments --
     train_exps = [] # exps
@@ -83,18 +97,19 @@ def run_base(base,stages,cache,chkpt_root,
 
         # -- load stage --
         stage_k = "stage_%d" % stage_i
-        stage = stages[stage_k]
+        stage = stages[stage_k] if stage_k in stages else {}
         if stage_i > 0:
             stage_prev = stages[stage.train_prev]
 
         # -- check each exp --
         nexps = get_num(stage,"exp_%d")
+        nexps = max(nexps,1)
         for exp_i in range(nexps):
             # print(stage_i,exp_i)
 
             # -- get exp --
             exp_k = "exp_%d" % exp_i
-            exp = stage[exp_k]
+            exp = stage[exp_k] if exp_k in stage else {}
 
             # -- create full config --
             cfg = create_config(base,exp)
@@ -133,7 +148,7 @@ def check_stage_complete(root,uuid,nepochs):
     return chkpt_fn.exists()
 
 def get_uuid(cfg,cache,nocheck=True):
-    if nocheck:
+    if nocheck or (cache is None):
         uuid = str(uuid_gen.uuid4())
     else:
         uuid = cache.get_uuid(cfg)
@@ -197,12 +212,15 @@ def get_checkpoint(checkpoint_dir,uuid,nepochs):
     chkpt_fn = Path(checkpoint_dir) / ("%s-epoch=%02d.ckpt" % (uuid,nepochs))
     return chkpt_fn
 
-def load_train_base(stages):
+def load_train_base(stages,use_learn=True):
 
     # -- load train/test base --
     base = get_exps(stages.base)
     assert len(base) == 1,"The base must be one experiment."
     base = base[0] # one elem
+
+    # -- don't append learning --
+    if use_learn is False: return base
 
     # -- load learning/training info --
     learning = get_exps(stages.learning)

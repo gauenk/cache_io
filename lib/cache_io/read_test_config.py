@@ -12,6 +12,7 @@ from easydict import EasyDict as edict
 from cache_io.exps import load,load_edata
 from cache_io.api import ExpCache
 from cache_io import view
+from cache_io import train_stages
 
 def run(fn,cache_name=None,cache_reset=False):
 
@@ -31,13 +32,13 @@ def run(fn,cache_name=None,cache_reset=False):
     data = read(fn)
 
     # -- load grids --
-    tr_cfgs = load_grid(data['train_grid'],learn=True)
+    chkpt_root = data['chkpt_root']
+    tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=True)[:5]
     pp.pprint(tr_cfgs[0])
-
+    tr_uuids = get_uuids(tr_cfgs,data['train_cache_name'])
+    tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=False) # w/out learn
     # te_cfgs = load_grid(data['test_grid0'],data['train_grid']) # multiple in future
     te_cfgs = load_grid(data['test_grid0']) # multiple in future
-    tr_uuids = get_uuids(tr_cfgs,data['train_cache_name'])
-    tr_cfgs = load_grid(data['train_grid'],learn=False) # reset train without learn
     chkpt_root = Path(data.chkpt_root)
     label_info = data['label_info']
     fill_train = data['test_grid0'].fill_train_cfg
@@ -104,8 +105,8 @@ def trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
 def get_test_pretrained(chkpt_root,te_cfg,tr_cfg,tr_uuid):
     if isinstance(te_cfg.nepochs,int):
         pretrained_path = "%s-epoch=%02d.ckpt" % (tr_uuid,te_cfg.nepochs-1)
+        # print(chkpt_root,tr_uuid,te_cfg.nepochs)
         check_path = chkpt_root / tr_uuid / pretrained_path
-        # print(check_path)
         assert check_path.exists()
     elif te_cfg.nepochs == "latest":
         pretrained_path = "%s-epoch=%02d.ckpt" % (tr_uuid,-1)
@@ -140,6 +141,10 @@ def get_uuids(exps,name,version="v1"):
         uuid = cache.read_uuid(exp)
         uuids.append(uuid)
     return uuids
+
+def load_train_grid(stages,chkpt_root,learn=True):
+    exps,_ = train_stages.run_core(stages,chkpt_root,use_learn=learn)
+    return exps
 
 def load_grid(grid,learn=True):
     return load_mesh_grid(grid,learn=learn)
