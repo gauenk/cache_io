@@ -212,7 +212,7 @@ def load_train_base(stages):
     # -- append --
     for key in learning:
         base[key] = learning[key]
-    
+
     return base
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
