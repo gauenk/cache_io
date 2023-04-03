@@ -19,7 +19,7 @@ def run(fn,cache_name=None,cache_reset=False):
     # -- load cache --
     exp_cache = None
     if not(cache_name is None):
-        exp_cache = ExpCache(cache_name,"v1")
+        exp_cache = ExpCache(cache_name)
         # exp_cache.clear()
         if cache_reset:
             exp_cache.clear()
@@ -33,7 +33,7 @@ def run(fn,cache_name=None,cache_reset=False):
 
     # -- load grids --
     chkpt_root = data['chkpt_root']
-    tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=True)[:5]
+    tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=True)
     pp.pprint(tr_cfgs[0])
     tr_uuids = get_uuids(tr_cfgs,data['train_cache_name'])
     tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=False) # w/out learn

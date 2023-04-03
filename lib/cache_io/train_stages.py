@@ -24,6 +24,8 @@ Example:
 import shutil
 import copy
 dcopy = copy.deepcopy
+import pprint
+pp = pprint.PrettyPrinter(depth=5,indent=8)
 import yaml
 from pathlib import Path
 import uuid as uuid_gen

@@ -75,6 +75,9 @@ class UUIDCache():
         data = {"uuid":uuids,"config":cfgs}
         self.write_uuid_file(data)
 
+    def write(self,data):
+        write_uuid_file(self.uuid_file,data)
+
     def write_uuid_file(self,data):
         write_uuid_file(self.uuid_file,data)
 

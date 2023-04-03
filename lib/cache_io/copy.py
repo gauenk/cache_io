@@ -21,6 +21,7 @@ Copy one cache name to another.
 """
 
 import tqdm
+import os
 import shutil
 from .exp_cache import ExpCache
 from .exps import get_exps
@@ -31,7 +32,8 @@ def enames(name0,version0,name1,version1,exps=None,
     dest = ExpCache(name1,version1)
     exp_cache(src,dest,exps,overwrite,skip_empty)
 
-def exp_cache_very_fast(src_list,dst,version,skip_results=False):
+def exp_cache_very_fast(src_list,dst,version,skip_results=False,
+                        reset=False,links_only=False):
     """
     Copy all from src to dst without checks. 
     Much faster. More dangerous. #YOLO!
@@ -39,10 +41,9 @@ def exp_cache_very_fast(src_list,dst,version,skip_results=False):
     # print("Very Fast.")
     # print("skip_results: ",skip_results)
     if len(dst.uuid_cache.data['config']) > 0:
-        print ("Warning: Destination should be an empty or the uuids should match.")
+        print("Warning: Destination should be an empty or the uuids should match.")
 
     # -- reset --
-    reset = False
     if reset:
         dst.uuid_cache.write_uuid_file({"config":[],"uuid":[]})
 
@@ -54,11 +55,11 @@ def exp_cache_very_fast(src_list,dst,version,skip_results=False):
         uuid_data = src.uuid_cache.data
         uuids = uuid_data['uuid']
         cfgs = uuid_data['config']
-        cnt += copy_results(dst,src.root,uuids,cfgs)
+        cnt += copy_results(dst,src.root,uuids,cfgs,links_only=links_only)
     print("Total Number of Exps Copied: %d" % cnt)
 
 
-def copy_results(dst,src_root,src_uuids,src_cfgs):
+def copy_results(dst,src_root,src_uuids,src_cfgs,links_only=False):
 
     # -- include all (uuid,cfg) pairs --
     dst_cfgs = dst.uuid_cache.data['config']
@@ -77,10 +78,13 @@ def copy_results(dst,src_root,src_uuids,src_cfgs):
         if not(src_path.exists()):
             continue
         if dst_path.exists(): 
-            print("Destination [%s] exists. Skipping." % dst_path)
+            # print("Destination [%s] exists. Skipping." % dst_path)
             continue
         cnt += 1
-        shutil.copytree(src_path,dst_path)
+        if links_only:
+            os.symlink(str(src_path.resolve()),str(dst_path.resolve()))
+        else:
+            shutil.copytree(src_path,dst_path)
     return cnt
 
 def exp_cache_fast(src,dest,skip_results=False):
