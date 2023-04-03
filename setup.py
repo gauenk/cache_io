@@ -32,6 +32,8 @@ setup(
     entry_points = {
         'console_scripts': ['lsc=cache_io.lsc:main',
                             'cache_cp=cache_io.cmd_copy:main',
-                            'sbatch_py=cache_io.slurm.cmdline:main'],
+                            'sbatch_py=cache_io.slurm.cmdline:main',
+                            'merge_cache=cache_io.slurm.merge_cache:main'
+],
     }
 )

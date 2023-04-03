@@ -42,7 +42,7 @@ def isstr(num):
 
 class ExpCache():
 
-    def __init__(self,root,version):
+    def __init__(self,root,version="v1"):
         self.root = root if isinstance(root,Path) else Path(root)
         self.tensor_cache = TensorCache(root)
         self.uuid_cache = UUIDCache(root,version)
