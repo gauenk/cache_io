@@ -105,7 +105,7 @@ def trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
 def get_test_pretrained(chkpt_root,te_cfg,tr_cfg,tr_uuid):
     if isinstance(te_cfg.nepochs,int):
         pretrained_path = "%s-epoch=%02d.ckpt" % (tr_uuid,te_cfg.nepochs-1)
-        print(chkpt_root,tr_uuid,te_cfg.nepochs)
+        # print(chkpt_root,tr_uuid,te_cfg.nepochs)
         check_path = chkpt_root / tr_uuid / pretrained_path
         assert check_path.exists()
     elif te_cfg.nepochs == "latest":
