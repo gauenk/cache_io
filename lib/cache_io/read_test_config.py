@@ -14,14 +14,14 @@ from cache_io.api import ExpCache
 from cache_io import view
 from cache_io import train_stages
 
-def run(fn,cache_name=None,cache_reset=False):
+def run(fn,cache_name=None,reset=False):
 
     # -- load cache --
     exp_cache = None
     if not(cache_name is None):
         exp_cache = ExpCache(cache_name)
         # exp_cache.clear()
-        if cache_reset:
+        if reset:
             exp_cache.clear()
         exps = exp_cache.load_raw_fast(skip_results=True)[1]
         if len(exps) > 0:
@@ -105,7 +105,7 @@ def trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
 def get_test_pretrained(chkpt_root,te_cfg,tr_cfg,tr_uuid):
     if isinstance(te_cfg.nepochs,int):
         pretrained_path = "%s-epoch=%02d.ckpt" % (tr_uuid,te_cfg.nepochs-1)
-        # print(chkpt_root,tr_uuid,te_cfg.nepochs)
+        print(chkpt_root,tr_uuid,te_cfg.nepochs)
         check_path = chkpt_root / tr_uuid / pretrained_path
         assert check_path.exists()
     elif te_cfg.nepochs == "latest":
@@ -139,6 +139,10 @@ def get_uuids(exps,name,version="v1"):
     uuids = []
     for exp in tqdm.tqdm(exps):
         uuid = cache.read_uuid(exp)
+        if uuid == -1:
+            print(exp)
+            print("Couldn't find experiment in the training set.")
+            exit(0)
         uuids.append(uuid)
     return uuids
 

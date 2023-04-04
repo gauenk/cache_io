@@ -312,7 +312,7 @@ class ExpCache():
             # results = self.load_exp(cfg)
             results = self.read_results(uuid)
             if results is None:
-                print("Missing results for uuid [%d]" % str(uuid),flush=True)
+                print("Missing results for uuid [%s]" % str(uuid),flush=True)
                 return []
             results = results_fxn(results)
             self.append_record(record,uuid,cfg,results)
@@ -321,10 +321,12 @@ class ExpCache():
         # -- launch parallel --
         # uuids = self.uuid_cache.data['uuid']
         # cfgs = self.uuid_cache.data['config']
+        n_jobs = 20
         E = len(exps)
         append_d = delayed(append)
         with tqdm_joblib(desc="Loading Experiment Results", total=E) as progress_bar:
-            records = Parallel(n_jobs=16)(append_d(exp,uuid) for exp,uuid in zip(exps,uuids))
+            records = Parallel(n_jobs=n_jobs)(append_d(exp,uuid) \
+                                              for exp,uuid in zip(exps,uuids))
         records = pd.concat(records)
         records.reset_index(inplace=True,drop=True)
 

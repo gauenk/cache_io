@@ -119,6 +119,7 @@ def script_parser():
     parser.add_argument('--very_fast',action="store_true")
     parser.add_argument('--fast',action="store_true")
     parser.add_argument('--links_only',action="store_true")
+    parser.add_argument('--reset',action="store_true")
 
     # -- parse --
     args = parser.parse_known_args()[0]
