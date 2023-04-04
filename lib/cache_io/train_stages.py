@@ -232,7 +232,7 @@ def load_train_base(stages,use_learn=True):
     # -- append --
     for key in learning:
         base[key] = learning[key]
-    
+
     return base
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-

@@ -140,6 +140,7 @@ def get_uuids(exps,name,version="v1"):
     for exp in tqdm.tqdm(exps):
         uuid = cache.read_uuid(exp)
         if uuid == -1:
+            print(uuid)
             print(exp)
             print("Couldn't find experiment in the training set.")
             exit(0)
