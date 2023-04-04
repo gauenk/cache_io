@@ -144,7 +144,8 @@ def merge(args,name,version,exps):
     # -- copy all at once --
     if args.very_fast:
         exp_cache_copy_very_fast(cache_names,cache,version,
-                                 args.merge_skip_results,links_only=args.links_only)
+                                 args.merge_skip_results,
+                                 reset=args.reset,links_only=args.links_only)
         return
 
     # -- copy in a loop --

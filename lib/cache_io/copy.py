@@ -38,37 +38,47 @@ def exp_cache_very_fast(src_list,dst,version,skip_results=False,
     Copy all from src to dst without checks. 
     Much faster. More dangerous. #YOLO!
     """
-    # print("Very Fast.")
-    # print("skip_results: ",skip_results)
-    if len(dst.uuid_cache.data['config']) > 0:
-        print("Warning: Destination should be an empty or the uuids should match.")
 
     # -- reset --
     if reset:
         dst.uuid_cache.write_uuid_file({"config":[],"uuid":[]})
 
+    # -- warning message --
+    if len(dst.uuid_cache.data['config']) > 0:
+        print("Warning: Destination should be an empty or the uuids should match.")
+
     # -- copy each source cache --
-    uuids,cfgs,results = [],[],[]
+    uuids,cfgs = [],[]
     cnt = 0
     for src_name in tqdm.tqdm(src_list):
         src = ExpCache(src_name,version)
-        uuid_data = src.uuid_cache.data
-        uuids = uuid_data['uuid']
-        cfgs = uuid_data['config']
-        cnt += copy_results(dst,src.root,uuids,cfgs,links_only=links_only)
+        src_data = src.uuid_cache.data
+        src_uuids = src_data['uuid']
+        src_cfgs = src_data['config']
+        cnt_i,cfgs_i,uuids_i = copy_results(dst,src.root,src_uuids,src_cfgs,
+                                            reset=reset,links_only=links_only)
+        cnt += cnt_i
+        cfgs.extend(cfgs_i)
+        uuids.extend(uuids_i)
     print("Total Number of Exps Copied: %d" % cnt)
 
+    # -- save pairs --
+    dst.uuid_cache.write_uuid_file({"config":cfgs,"uuid":uuids})
 
-def copy_results(dst,src_root,src_uuids,src_cfgs,links_only=False):
+def copy_results(dst,src_root,src_uuids,src_cfgs,reset=False,links_only=False):
 
     # -- include all (uuid,cfg) pairs --
     dst_cfgs = dst.uuid_cache.data['config']
     dst_uuids = dst.uuid_cache.data['uuid']
-    for uuid,cfg in zip(src_uuids,src_cfgs):
-        if uuid in dst_uuids: continue
-        dst_uuids.append(uuid)
-        dst_cfgs.append(cfg)
-    dst.uuid_cache.write_uuid_file({"config":dst_cfgs,"uuid":dst_uuids})
+    if reset:  # no check if reset
+        cfgs_i = src_cfgs
+        uuids_i = src_uuids
+    else:
+        cfgs_i,uuids_i = [],[]
+        for uuid,cfg in zip(src_uuids,src_cfgs):
+            if uuid in dst_uuids: continue
+            uuids_i.append(uuid)
+            cfgs_i.append(cfg)
 
     # -- copy the uuid results --
     cnt = 0
@@ -85,7 +95,7 @@ def copy_results(dst,src_root,src_uuids,src_cfgs,links_only=False):
             os.symlink(str(src_path.resolve()),str(dst_path.resolve()))
         else:
             shutil.copytree(src_path,dst_path)
-    return cnt
+    return cnt,cfgs_i,uuids_i
 
 def exp_cache_fast(src,dest,skip_results=False):
     """
