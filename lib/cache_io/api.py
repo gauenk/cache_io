@@ -124,7 +124,7 @@ def dispatch(enable_dispatch,*args):
         raise ValueError("Uknown dispatch type [%s]" % enable_dispatch)
     return outs
 
-def get_uuids(exps,cache_or_name,version="v1",no_config_check=False):
+def get_uuids(exps,cache_or_name,version="v1",no_config_check=False,read=True,reset=False):
 
     # -- open or assign cache --
     if isinstance(cache_or_name,ExpCache):
@@ -132,13 +132,22 @@ def get_uuids(exps,cache_or_name,version="v1",no_config_check=False):
     else:
         cache = ExpCache(cache_or_name,version)
 
+    # -- rest --
+    if reset: cache.clear()
+
     # -- return already assigned --
-    # if len(exps) == len(cache.uuid_cache.data['config']):
-    #     exps = cache.uuid_cache.data['config']
-    #     uuids = cache.uuid_cache.data['uuid']
-    #     return exps,uuids
-    # if len(cache.uuid_cache.data['config']) > 0 and no_config_check:
-    #     print("Warning: if no_config_check we want an empty uuid_cache.")
+    nexps = len(exps)
+    ncache = len(cache.uuid_cache.data['config'])
+    if len(exps) == len(cache.uuid_cache.data['config']) and read:
+        exps = cache.uuid_cache.data['config']
+        uuids = cache.uuid_cache.data['uuid']
+        return exps,uuids
+    elif read and nexps > 0 and ncache == 0:
+        print("# exps != # cache [%d != %d]. Read after loading once." % (nexps,ncache))
+    elif read:
+        print("# exps != # cache [%d != %d]. Think about this." % (nexps,ncache))
+    if len(cache.uuid_cache.data['config']) > 0 and no_config_check:
+        print("Warning: if no_config_check we want an empty uuid_cache.")
 
     # -- read uuids --
     uuids = []
@@ -151,8 +160,8 @@ def get_uuids(exps,cache_or_name,version="v1",no_config_check=False):
 
     # -- assign uuids --
     if no_config_check:
-        print("Writing.")
         cache.uuid_cache.write_uuid_file({"config":exps,"uuid":uuids})
+    print("[get_uuids] Completed Writing.")
 
     return exps,uuids
 

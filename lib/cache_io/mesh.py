@@ -60,8 +60,15 @@ def add_cfg(cfg_list,cfg2append):
     append_configs(cfg_list,cfg2append)
 
 def append_configs(cfg_list,cfg2append):
+    # print(cfg2append,cfg_list[0])
     for e,exp in enumerate(cfg_list):
-        cfg_list[e] = edict(dict(exp,**cfg2append))
+        cfg_list[e] = edict(cfg_list[e])
+        for key in cfg2append:
+            if key in cfg_list[e]: continue
+            cfg_list[e][key] = cfg2append[key]
+        # cfg_list[e] = edict(dict(exp,**cfg2append))
+    # print(cfg_list[0])
+
 
 #
 #

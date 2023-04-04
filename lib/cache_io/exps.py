@@ -56,10 +56,8 @@ def unpack(edata):
     # -- add set of listed configs --
     exps = append_listed(exps,listed)
 
-
     # -- mutex == non-meshed (or mutually-exclusive) groups --
     exps = append_mutex(exps,mutexs)
-
 
     # -- use cfg to overwrite each exp from accumulation --
     if len(exps) == 0: exps = [cfg]
