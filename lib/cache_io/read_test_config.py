@@ -105,18 +105,33 @@ def trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
 def get_test_pretrained(chkpt_root,te_cfg,tr_cfg,tr_uuid):
     if isinstance(te_cfg.nepochs,int):
         pretrained_path = "%s-epoch=%02d.ckpt" % (tr_uuid,te_cfg.nepochs-1)
-        # print(chkpt_root,tr_uuid,te_cfg.nepochs)
         check_path = chkpt_root / tr_uuid / pretrained_path
+        if not(check_path.exists()):
+            pretrained_path = "%s-save-epoch=%02d.ckpt" % (tr_uuid,te_cfg.nepochs-1)
+            check_path = chkpt_root / tr_uuid / pretrained_path
+        # print(chkpt_root,tr_uuid,te_cfg.nepochs)
         assert check_path.exists()
     elif te_cfg.nepochs == "latest":
-        pretrained_path = "%s-epoch=%02d.ckpt" % (tr_uuid,-1)
-        for epoch in range(tr_cfg.nepochs):
-            path = chkpt_root / tr_uuid / ("%s-epoch=%02d.ckpt" % (tr_uuid,epoch))
-            if path.exists():
-                pretrained_path = path.name
+        base = "%s-epoch=%02d.ckpt"
+        pretrained_path,epoch = get_pretrained_latest(chkpt_root,tr_cfg,tr_uuid,base)
+        if epoch == -1:
+            base = "%s-save-epoch=%02d.ckpt"
+            pretrained_path,epoch = get_pretrained_latest(chkpt_root,tr_cfg,tr_uuid,base)
     else:
         raise ValueError("Uknown value %s" % str(te_cfg.nepochs))
+    check_path = chkpt_root / tr_uuid / pretrained_path
+    assert check_path.exists()
     return str(pretrained_path)
+
+def get_pretrained_latest(chkpt_root,tr_cfg,tr_uuid,base):
+    pick_epoch = -1
+    pretrained_path = base % (tr_uuid,-1)
+    for epoch in range(tr_cfg.nepochs):
+        path = chkpt_root / tr_uuid / (base % (tr_uuid,epoch))
+        if path.exists():
+            pretrained_path = path.name
+            pick_epoch = epoch
+    return pretrained_path,pick_epoch
 
 def get_label(exp,label_info):
     args = []

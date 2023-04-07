@@ -69,6 +69,13 @@ def run_launcher(base):
     save_launch_info(info_dir,uuid_s,args.job_name_base,slurm_ids,out_fns,proc_args)
     save_json(info_dir/("%s_args.json"%uuid_s),args)
 
+    # -- [recommended named launch command] --
+    print("Recommended command.")
+    jname = args.job_name_base
+    args = (jname,uuid_s,args.total_exps,args.chunk_size,jname)
+    fmt = "nohup named_launch %s %s %d %d username > named_launch_%s.txt &"
+    print(fmt % args)
+
 def run_process(einds,clear,name,version,exps):
     """
     Parses arguments for the "<script_name.py>" script, _always_:
