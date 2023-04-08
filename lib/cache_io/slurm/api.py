@@ -5,7 +5,7 @@ The core logic of launching wrapped slurm processes
 
 """
 
-import os,tqdm
+import os,tqdm,shutil
 from pathlib import Path
 from ..exp_cache import ExpCache
 from ..copy import exp_cache as exp_cache_copy
@@ -52,7 +52,7 @@ def run_launcher(base):
 
     # -- args --
     base /= args.job_name_base
-    output_dir,launch_dir,info_dir = create_paths(base,args.reset)
+    output_dir,launch_dir,info_dir = create_paths(base,args.reset_logs)
 
     # -- create slurm launch files --
     unique = args.unique_names
@@ -60,6 +60,14 @@ def run_launcher(base):
     fixed_args = get_fixed_args(args)
     files,out_fns,uuid_s = create_launch_files(proc_args,fixed_args,
                                                launch_dir,output_dir)
+
+    # -- clear old distributed cache files --
+    if args.reset_cache:
+        for proc in proc_args:
+            path_p = Path(".cache_io")/proc.name
+            if path_p.exists(): shutil.rmtree(str(path_p))
+
+    # -- view --
     print("UUID: ",uuid_s)
 
     # -- launch files --
@@ -68,6 +76,21 @@ def run_launcher(base):
     # -- save launch info --
     save_launch_info(info_dir,uuid_s,args.job_name_base,slurm_ids,out_fns,proc_args)
     save_json(info_dir/("%s_args.json"%uuid_s),args)
+
+    # -- [recommended named launch command] --
+    print("Recommended command to relaunch after time expires:")
+    jname = args.job_name_base
+    fmt_args = (jname,uuid_s,args.total_exps,args.chunk_size,os.getlogin(),jname)
+    fmt = "nohup named_launch %s %s %d %d %s > named_launch_%s.txt &"
+    print(fmt % fmt_args)
+
+    # -- [recommended merge command] --
+    print("Recommended command to merge launched experiments:")
+    jname = args.job_name_base
+    fmt_args = (args.total_exps,args.chunk_size,jname)
+    fmt = "merge_cache .cache_io/PATH_HERE %d %d %s --very_fast --links_only --reset"
+    print(fmt % fmt_args)
+
 
 def run_process(einds,clear,name,version,exps):
     """

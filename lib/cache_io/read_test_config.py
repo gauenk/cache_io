@@ -30,32 +30,42 @@ def run(fn,cache_name=None,reset=False):
 
     # -- read formatted config file --
     data = read(fn)
+    exps = []
+
+    # -- shared --
+    chkpt_root = data['chkpt_root']
+    te_cfgs = load_grid(data['test_grid0']) # multiple in future
+    label_info = data['label_info']
+    chkpt_root = Path(data.chkpt_root)
 
     # -- load grids --
-    chkpt_root = data['chkpt_root']
-    tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=True)
-    pp.pprint(tr_cfgs[0])
-    tr_uuids = get_uuids(tr_cfgs,data['train_cache_name'])
-    tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=False) # w/out learn
-    # te_cfgs = load_grid(data['test_grid0'],data['train_grid']) # multiple in future
-    te_cfgs = load_grid(data['test_grid0']) # multiple in future
-    chkpt_root = Path(data.chkpt_root)
-    label_info = data['label_info']
-    fill_train = data['test_grid0'].fill_train_cfg
-    fill_train_overwrite = data['test_grid0'].fill_train_overwrite
-    # fixed = data['test_grid0'].fixed
-    fill_skips = data['test_grid0'].skips
+    if "train_grid" in data:
+        tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=True)
+        pp.pprint(tr_cfgs[0])
+        tr_uuids = get_uuids(tr_cfgs,data['train_cache_name'])
+        # w/out learn
+        tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=False)
+        # te_cfgs = load_grid(data['test_grid0'],data['train_grid']) # multiple in future
+        fill_train = data['test_grid0'].fill_train_cfg
+        fill_train_overwrite = data['test_grid0'].fill_train_overwrite
+        # fixed = data['test_grid0'].fixed
+        fill_skips = data['test_grid0'].skips
 
-    # -- view --
-    # print(len(tr_cfgs))
-    # diffs = view.get_diffs(tr_cfgs)
-    # view.print_loop(tr_cfgs,tr_uuids,diffs)
-    # diffs = view.get_diffs(tr_cfgs)
-    # view.print_loop(te_cfgs,[None for _ in range(len(te_cfgs))],diffs)
+        # -- view --
+        # print(len(tr_cfgs))
+        # diffs = view.get_diffs(tr_cfgs)
+        # view.print_loop(tr_cfgs,tr_uuids,diffs)
+        # diffs = view.get_diffs(tr_cfgs)
+        # view.print_loop(te_cfgs,[None for _ in range(len(te_cfgs))],diffs)
 
-    # -- combine train and test grid --
-    exps = trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
-                     fill_train,fill_train_overwrite,fill_skips)
+        # -- combine train and test grid --
+        exps += trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
+                         fill_train,fill_train_overwrite,fill_skips)
+
+    # -- append fixed pretrained paths --
+    if "fixed_paths" in data:
+        exps += append_fixed_paths(data['fixed_paths'],te_cfgs)#data['test_grid0'])
+
     # print("b.")
     # df = pd.DataFrame(exps)
     # print(len(exps))
@@ -105,18 +115,33 @@ def trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
 def get_test_pretrained(chkpt_root,te_cfg,tr_cfg,tr_uuid):
     if isinstance(te_cfg.nepochs,int):
         pretrained_path = "%s-epoch=%02d.ckpt" % (tr_uuid,te_cfg.nepochs-1)
-        # print(chkpt_root,tr_uuid,te_cfg.nepochs)
         check_path = chkpt_root / tr_uuid / pretrained_path
+        if not(check_path.exists()):
+            pretrained_path = "%s-save-epoch=%02d.ckpt" % (tr_uuid,te_cfg.nepochs-1)
+            check_path = chkpt_root / tr_uuid / pretrained_path
+        # print(chkpt_root,tr_uuid,te_cfg.nepochs)
         assert check_path.exists()
     elif te_cfg.nepochs == "latest":
-        pretrained_path = "%s-epoch=%02d.ckpt" % (tr_uuid,-1)
-        for epoch in range(tr_cfg.nepochs):
-            path = chkpt_root / tr_uuid / ("%s-epoch=%02d.ckpt" % (tr_uuid,epoch))
-            if path.exists():
-                pretrained_path = path.name
+        base = "%s-epoch=%02d.ckpt"
+        pretrained_path,epoch = get_pretrained_latest(chkpt_root,tr_cfg,tr_uuid,base)
+        if epoch == -1:
+            base = "%s-save-epoch=%02d.ckpt"
+            pretrained_path,epoch = get_pretrained_latest(chkpt_root,tr_cfg,tr_uuid,base)
     else:
         raise ValueError("Uknown value %s" % str(te_cfg.nepochs))
+    check_path = chkpt_root / tr_uuid / pretrained_path
+    assert check_path.exists()
     return str(pretrained_path)
+
+def get_pretrained_latest(chkpt_root,tr_cfg,tr_uuid,base):
+    pick_epoch = -1
+    pretrained_path = base % (tr_uuid,-1)
+    for epoch in range(tr_cfg.nepochs):
+        path = chkpt_root / tr_uuid / (base % (tr_uuid,epoch))
+        if path.exists():
+            pretrained_path = path.name
+            pick_epoch = epoch
+    return pretrained_path,pick_epoch
 
 def get_label(exp,label_info):
     args = []
@@ -126,7 +151,8 @@ def get_label(exp,label_info):
         else:
             val = exp[key]
         args.append(val)
-    label = label_info['fmt'] % tuple(args)
+    if len(label_info['fmt']) > 0:
+        label = label_info['fmt'] % tuple(args)
     # print(label)
     return label
 
@@ -185,6 +211,26 @@ def load_mesh_grid(grid,learn=True):
         exp_learn = exp_learn[0]
         append_cfg0(exp_base,exp_learn)
     exps = mesh_base_var(exp_base,exps_var)
+    return exps
+
+def append_fixed_paths(fixed_paths,te_cfgs):
+    exps = []
+    opts = ["root","load","type"]
+    L = len(fixed_paths['path'])
+    for te_cfg in te_cfgs:
+        for i in range(L):
+
+            # -- fill --
+            exp = dcopy(te_cfg)
+            exp.pretrained_path = fixed_paths['path'][i]
+
+            # -- fill optional --
+            for opt in opts:
+                if opt in fixed_paths:
+                    exp["pretrained_%s" % opt] = fixed_paths[opt][i]
+
+            # -- append --
+            exps.append(exp)
     return exps
 
 def append_cfg0(cfg0,cfg1,overwrite=False,skips=None):

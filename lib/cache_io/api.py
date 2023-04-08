@@ -124,7 +124,8 @@ def dispatch(enable_dispatch,*args):
         raise ValueError("Uknown dispatch type [%s]" % enable_dispatch)
     return outs
 
-def get_uuids(exps,cache_or_name,version="v1",no_config_check=False,read=True,reset=False):
+def get_uuids(exps,cache_or_name,version="v1",
+              no_config_check=False,read=True,reset=False):
 
     # -- open or assign cache --
     if isinstance(cache_or_name,ExpCache):

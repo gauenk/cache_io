@@ -15,5 +15,6 @@ def main():
     base = Path(os.getcwd()).resolve() / "dispatch"
     run_launcher(base)
 
+
 if __name__ == "__main__":
     main()

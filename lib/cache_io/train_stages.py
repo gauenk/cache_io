@@ -35,8 +35,8 @@ from .exps import get_exps
 from .exps import load_edata
 
 def run(fn,cache_name,cache_version="v1",
-        load_complete=True,stage_select=0,
-        reset=False,fast=True,update=False):
+        load_complete=True,stage_select=-1,
+        reset=False,fast=True,update=False,read_filter=None):
 
     # -- open files --
     stages = read(fn)
@@ -49,6 +49,7 @@ def run(fn,cache_name,cache_version="v1",
         # print("Skip reloading exps since config is not empty.")
         uuids = cache.uuid_cache.data['uuid']
         cfgs = cache.uuid_cache.data['config']
+        uuids,cfgs = apply_read_filter(uuids,cfgs,read_filter)
         return cfgs,uuids
 
     # -- core run --
@@ -234,6 +235,19 @@ def load_train_base(stages,use_learn=True):
         base[key] = learning[key]
 
     return base
+
+def apply_read_filter(_uuids,_cfgs,read_filter):
+    if read_filter is None:
+        return _uuids,_cfgs
+    uuids,cfgs = [],[]
+    for uuid,cfg in zip(_uuids,_cfgs):
+        keep_cfg = True
+        for key,val in read_filter.items():
+            keep_cfg = keep_cfg and (cfg[key] == val)
+        if keep_cfg:
+            uuids.append(uuid)
+            cfgs.append(cfg)
+    return uuids,cfgs
 
 # -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #
