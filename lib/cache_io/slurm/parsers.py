@@ -55,8 +55,10 @@ def launcher_parser():
     #                     help="Run experiment with slurm exclusive flag.")
     parser.add_argument('--gpus_per_node',default=1)
     parser.add_argument('--cpus_per_task',default=4)
-    parser.add_argument('--reset',action="store_true",
+    parser.add_argument('--reset_logs',action="store_true",
                         help="Clear out the dispatch launch and output paths.")
+    parser.add_argument('--reset_cache',action="store_true",
+                        help="Clear out distributed caches using a glob: jobname_dispatch_*")
 
     # -- merging --
     parser.add_argument('--merge_skip_empty',action="store_false",

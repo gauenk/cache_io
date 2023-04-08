@@ -327,6 +327,7 @@ class ExpCache():
         with tqdm_joblib(desc="Loading Experiment Results", total=E) as progress_bar:
             records = Parallel(n_jobs=n_jobs)(append_d(exp,uuid) \
                                               for exp,uuid in zip(exps,uuids))
+        records = [r for r in records if isinstance(r,pd.DataFrame)]
         records = pd.concat(records)
         records.reset_index(inplace=True,drop=True)
 
