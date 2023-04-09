@@ -14,7 +14,7 @@ from cache_io.api import ExpCache
 from cache_io import view
 from cache_io import train_stages
 
-def run(fn,cache_name=None,reset=False):
+def run(fn,cache_name=None,reset=False,skip_dne=False):
 
     # -- load cache --
     exp_cache = None
@@ -60,7 +60,7 @@ def run(fn,cache_name=None,reset=False):
 
         # -- combine train and test grid --
         exps += trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
-                         fill_train,fill_train_overwrite,fill_skips)
+                          fill_train,fill_train_overwrite,fill_skips,skip_dne)
 
     # -- append fixed pretrained paths --
     if "fixed_paths" in data:
@@ -91,7 +91,7 @@ def run(fn,cache_name=None,reset=False):
     return exps
 
 def trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
-              fill_train,fill_train_overwrite,fill_skips):
+              fill_train,fill_train_overwrite,fill_skips,skip_dne):
     exps = []
     for tr_cfg,tr_uuid in zip(tr_cfgs,tr_uuids):
         for _te_cfg in te_cfgs:
@@ -104,6 +104,13 @@ def trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
             te_cfg.label0 = get_label(tr_cfg,label_info)
             te_cfg.label1 = get_label(te_cfg,label_info)
             te_cfg.tr_uuid = tr_uuid
+
+            # -- skip DNE --
+            exists = check_path(chkpt_root,tr_uuid,te_cfg.pretrained_path)
+            if not(exists):
+                msg = "Pretrained path must exist [%s]" % te_cfg.pretrained_path
+                if skip_dne: continue
+                else: raise ValueError(msg)
 
             # -- update flow --
             # if te_cfg.flow and te_cfg.wt == 0:
@@ -120,7 +127,7 @@ def get_test_pretrained(chkpt_root,te_cfg,tr_cfg,tr_uuid):
             pretrained_path = "%s-save-epoch=%02d.ckpt" % (tr_uuid,te_cfg.nepochs-1)
             check_path = chkpt_root / tr_uuid / pretrained_path
         # print(chkpt_root,tr_uuid,te_cfg.nepochs)
-        assert check_path.exists()
+        # assert check_path.exists()
     elif te_cfg.nepochs == "latest":
         base = "%s-epoch=%02d.ckpt"
         pretrained_path,epoch = get_pretrained_latest(chkpt_root,tr_cfg,tr_uuid,base)
@@ -130,8 +137,12 @@ def get_test_pretrained(chkpt_root,te_cfg,tr_cfg,tr_uuid):
     else:
         raise ValueError("Uknown value %s" % str(te_cfg.nepochs))
     check_path = chkpt_root / tr_uuid / pretrained_path
-    assert check_path.exists()
+    # assert check_path.exists()
     return str(pretrained_path)
+
+def check_path(chkpt_root,tr_uuid,pretrained_path):
+    check_path = chkpt_root / tr_uuid / pretrained_path
+    return check_path.exists()
 
 def get_pretrained_latest(chkpt_root,tr_cfg,tr_uuid,base):
     pick_epoch = -1
@@ -151,9 +162,9 @@ def get_label(exp,label_info):
         else:
             val = exp[key]
         args.append(val)
+    label = ""
     if len(label_info['fmt']) > 0:
         label = label_info['fmt'] % tuple(args)
-    # print(label)
     return label
 
 # def get_checkpoint(checkpoint_dir,uuid,nepochs):
