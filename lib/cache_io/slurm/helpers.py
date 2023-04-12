@@ -32,6 +32,7 @@ def write_launch_file(pargs,uuid_s,launch_dir,msg):
     return launch_fn
 
 def create_launch_msg(pargs,fixed_args,uuid_s,output_dir):
+    pypath = get_python_path()
     msg = r"#!/bin/sh -l" + "\n"*2
     for sbatch_key,sbatch_val in fixed_args.items():
         msg += "#SBATCH %s %s\n" % (sbatch_key,sbatch_val)
@@ -42,13 +43,21 @@ def create_launch_msg(pargs,fixed_args,uuid_s,output_dir):
     msg += "#SBATCH --output %s\n" % (output_fn)
     msg += "\n\n/bin/hostname\n\n"
     msg += "echo \"Saving log at %s\"\n" % (output_fn)
-    msg += "/home/gauenk/.pyenv/shims/python -u %s --start %d --end %d --dispatch" % (pargs.script,pargs.start,pargs.end)
+    msg += "%s -u %s --start %d --end %d --dispatch" % (pypath,pargs.script,pargs.start,pargs.end)
     if pargs.clear is True:
         msg += " --clear"
     if not(pargs.name is None):
         msg += " --name %s" % (pargs.name)
     msg += "\n"
     return msg,output_fn
+
+def get_python_path():
+    pcname = os.uname().nodename
+    if "anvil" in pcname:
+        base = "/home/x-kgauen/.conda/envs/2021.05-py38/stnls_paper/bin/python"
+    else:
+        base = "/home/gauenk/.pyenv/shims/python"
+    return base
 
 def get_process_args(args):
 
