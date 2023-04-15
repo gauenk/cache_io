@@ -5,6 +5,7 @@ Two levels of parsing for merging
 
 """
 
+import os
 import argparse
 from pathlib import Path
 from easydict import EasyDict as edict
@@ -25,7 +26,16 @@ def process_parser():
     args = edict(vars(args))
     return args
 
+def get_default_account():
+    pcname = os.uname().nodename
+    if "anvil" in pcname:
+        base = "cis230068-gpu"
+    else:
+        base = "standby"
+    return base
+
 def launcher_parser():
+    account = get_default_account()
     desc = "Launches python scripts equipped with 'slurm_parser' to accept arguments"
     parser = argparse.ArgumentParser(
         prog = 'Launching Dispatched Experiments with Slurm',
@@ -44,7 +54,7 @@ def launcher_parser():
     parser.add_argument('-J','--job_name_base',default=None)
     parser.add_argument('-C','--clear_first',action="store_true",
                         help="Clears the cache only for the first experiment.")
-    parser.add_argument('-A','--account',default="standby")
+    parser.add_argument('-A','--account',default=account)
     parser.add_argument('-M','--machines',nargs='+',
                         default=["e","f","b","g"]) # d, i
     parser.add_argument('-WM','--with_machines',action="store_true",
