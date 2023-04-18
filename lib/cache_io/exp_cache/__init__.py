@@ -110,6 +110,8 @@ class ExpCache():
     def read_uuid(self,config):
         return self.uuid_cache.read_uuid(config)
 
+    def __len__(self):
+        return len(self.uuid_cache.data['config'])
     # def get_uuids(self,configs,uuids=None,skips=None):
     #     out_uuids = []
     #     for i,config in enumerate(configs):
