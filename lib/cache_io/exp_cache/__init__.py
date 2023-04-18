@@ -96,6 +96,7 @@ class ExpCache():
         # we want to be able to set the uuid before we save the experiment.
         # assert check_uuid == -1,"The \"config\" must not exist in the uuid cache."
         # assert uuid == check_uuid, "Only one uuid per config."
+        if uuid is None: uuid = self.get_uuid(config)
         exists = self.check_results_exists(uuid)
         if overwrite is True or exists is False:
             if (exists is True) and VERBOSE:
@@ -109,6 +110,8 @@ class ExpCache():
     def read_uuid(self,config):
         return self.uuid_cache.read_uuid(config)
 
+    def __len__(self):
+        return len(self.uuid_cache.data['config'])
     # def get_uuids(self,configs,uuids=None,skips=None):
     #     out_uuids = []
     #     for i,config in enumerate(configs):
