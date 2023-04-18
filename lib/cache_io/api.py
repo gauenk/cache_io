@@ -10,6 +10,16 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 import uuid as uuid_gen
 
+# -- wandb --
+import copy
+dcopy = copy.deepcopy
+import numpy as np
+import pandas as pd
+try:
+    import wandb
+except:
+    pass
+
 # -- cache api --
 from .exps import read,get_exps
 from .misc import optional
@@ -22,7 +32,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
              records_fn=None,records_reload=True,skip_loop=False,verbose=True,
              einds=None,clear=False,uuids=None,preset_uuids=False,
              enable_dispatch=None,merge_dispatch=False,to_records_fast=False,
-             results_fxn=None):
+             results_fxn=None,proj_name="proj_name",use_wandb=True):
 
     # -- get cache info --
     name,version = cache_info(exp_file_or_list,name=name,version=version)
@@ -83,7 +93,12 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
         # -- run exp --
         if results is None: # check if no result
             exp.uuid = uuid
+            if use_wandb:
+                run = wandb.init(project=proj_name,config=wandb_format_exp(exp))
             results = exp_fxn(exp)
+            if use_wandb:
+                wandb.log(wandb_format(results))
+                wandb.finish()
             cache.save_exp(uuid,exp,results) # save to cache
 
     # -- records --
@@ -93,6 +108,45 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
         records = cache.to_records(exps,records_fn,records_reload,results_fxn=results_fxn)
 
     return records
+
+def wandb_format_exp(exp):
+    exp = dcopy(exp)
+    if "label0" in exp:
+        exp.tr_epochs,exp.tr_sigma = exp["label0"].split(",")
+        if "(" in exp.tr_epochs: exp.tr_epochs = int(exp.tr_epochs[1:])
+        if ")" in exp.tr_sigma: exp.tr_sigma = int(exp.tr_sigma[:-1])
+    return exp
+
+def wandb_format(results):
+    fmt = {}
+    def islist(value):
+        return isinstance(value,list) or isinstance(value,np.ndarray)
+    def isstr(value):
+        return isinstance(value,str) or isinstance(value,np.str)
+    def isfloat(value):
+        return isinstance(value,float) or isinstance(value,np.float)
+    def recurse_fmt(key,val):
+        if not(islist(val)):
+            fmt[key] = val
+        elif len(val) == 0:
+            fmt[key] = "None"
+        elif not(islist(val[0])):
+            if isstr(val[0]):
+                fmt[key] = val
+            elif isfloat(val[0]):
+                fmt[key] = np.mean(val)
+            else:
+                fmt[key] = val[0]
+        else:
+            recurse_fmt(key,val[0])
+    for key,val in results.items():
+        if key == "vid_name":
+            fmt[key] = val[0][0]
+        else:
+            recurse_fmt(key,val)            
+    # print(results)
+    # print(fmt)
+    return fmt
 
 def load_results(exps,name,version,records_fn=None,records_reload=True):
     cache = ExpCache(name,version)
