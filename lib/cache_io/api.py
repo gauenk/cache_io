@@ -100,16 +100,12 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
         # -- run exp --
         if results is None: # check if no result
             exp.uuid = uuid
-<<<<<<< HEAD
-            results = exp_fxn(dcopy(exp))
-=======
             if use_wandb:
                 run = wandb.init(project=proj_name,config=wandb_format_exp(exp))
             results = exp_fxn(exp)
             if use_wandb:
                 wandb.log(wandb_format(results))
                 wandb.finish()
->>>>>>> c8d6a98f6934f838b1f3f05890c068e80e9d1527
             cache.save_exp(uuid,exp,results) # save to cache
 
     # -- records --
