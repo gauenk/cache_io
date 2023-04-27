@@ -225,9 +225,19 @@ def load_mesh_grid(grid,learn=True):
     return exps
 
 def append_fixed_paths(fixed_paths,te_cfgs):
-    exps = []
-    opts = ["root","load","type"]
+
+    # -- pretrained opts --
+    pretrained_opts = ["root","load","type"]
     L = len(fixed_paths['path'])
+
+    # -- load other opts --
+    misc_opts = list(fixed_paths.keys())
+    print(misc_opts)
+    del misc_opts[misc_opts.index("path")]
+    for opt in pretrained_opts:
+        del misc_opts[misc_opts.index(opt)]
+
+    exps = []
     for te_cfg in te_cfgs:
         for i in range(L):
 
@@ -235,10 +245,15 @@ def append_fixed_paths(fixed_paths,te_cfgs):
             exp = dcopy(te_cfg)
             exp.pretrained_path = fixed_paths['path'][i]
 
-            # -- fill optional --
-            for opt in opts:
+            # -- fill pretrained optional --
+            for opt in pretrained_opts:
                 if opt in fixed_paths:
                     exp["pretrained_%s" % opt] = fixed_paths[opt][i]
+
+            # -- fill misc --
+            for opt in misc_opts:
+                exp[opt] = fixed_paths[opt][i]
+
 
             # -- append --
             exps.append(exp)

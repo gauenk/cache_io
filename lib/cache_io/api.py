@@ -11,6 +11,17 @@ dcopy = copy.deepcopy
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 import uuid as uuid_gen
+from pathlib import Path
+
+# -- wandb --
+import copy
+dcopy = copy.deepcopy
+import numpy as np
+import pandas as pd
+try:
+    import wandb
+except:
+    pass
 
 # -- cache api --
 from .exps import read,get_exps
@@ -24,13 +35,17 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
              records_fn=None,records_reload=True,skip_loop=False,verbose=True,
              einds=None,clear=False,uuids=None,preset_uuids=False,
              enable_dispatch=None,merge_dispatch=False,to_records_fast=False,
-             results_fxn=None):
+             results_fxn=None,proj_name="match_me",use_wandb=True):
 
     # -- get cache info --
     name,version = cache_info(exp_file_or_list,name=name,version=version)
 
     # -- get exps --
     exps = get_exps(exp_file_or_list)
+
+    # -- wandb defaults --
+    if proj_name == "match_me":
+        proj_name = "wandb_%s" % ("_".join(name.split("/")[1:]))
 
     # -- optionally restrict inds using an input parser --
     if not(enable_dispatch is None):
@@ -85,7 +100,16 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
         # -- run exp --
         if results is None: # check if no result
             exp.uuid = uuid
+<<<<<<< HEAD
             results = exp_fxn(dcopy(exp))
+=======
+            if use_wandb:
+                run = wandb.init(project=proj_name,config=wandb_format_exp(exp))
+            results = exp_fxn(exp)
+            if use_wandb:
+                wandb.log(wandb_format(results))
+                wandb.finish()
+>>>>>>> c8d6a98f6934f838b1f3f05890c068e80e9d1527
             cache.save_exp(uuid,exp,results) # save to cache
 
     # -- records --
@@ -95,6 +119,52 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
         records = cache.to_records(exps,records_fn,records_reload,results_fxn=results_fxn)
 
     return records
+
+def wandb_format_exp(exp):
+    exp = dcopy(exp)
+    # if "label0" in exp:
+    #     exp.tr_epochs,exp.tr_sigma = exp["label0"].split(",")
+    #     if "(" in exp.tr_epochs: exp.tr_epochs = int(exp.tr_epochs[1:])
+    #     if ")" in exp.tr_sigma: exp.tr_sigma = int(exp.tr_sigma[:-1])
+    for key,val in exp.items():
+        if isinstance(val,Path):
+            exp[key] = str(val)
+    return exp
+
+def wandb_format(results):
+    fmt = {}
+    def islist(value):
+        return isinstance(value,list) or isinstance(value,np.ndarray)
+    def isstr(value):
+        return isinstance(value,str) or isinstance(value,np.str)
+    def isfloat(value):
+        return isinstance(value,float) or isinstance(value,np.float)
+    def recurse_fmt(key,val):
+        if not(islist(val)):
+            fmt[key] = val
+        elif len(val) == 0:
+            fmt[key] = "None"
+        elif not(islist(val[0])):
+            if isstr(val[0]):
+                fmt[key] = val
+            elif isinstance(val[0],Path):
+                fmt[key] = str(val[0])
+            elif isfloat(val[0]):
+                fmt[key] = np.mean(val)
+            else:
+                fmt[key] = val[0]
+        else:
+            recurse_fmt(key,val[0])
+    for key,val in results.items():
+        if key == "vid_name":
+            fmt[key] = val[0][0]
+        elif isinstance(val,Path):
+            fmt[key] = str(val)
+        else:
+            recurse_fmt(key,val)            
+    # print(results)
+    # print(fmt)
+    return fmt
 
 def load_results(exps,name,version,records_fn=None,records_reload=True):
     cache = ExpCache(name,version)
@@ -125,7 +195,7 @@ def dispatch(enable_dispatch,*args):
     return outs
 
 def get_uuids(exps,cache_or_name,version="v1",
-              no_config_check=False,read=True,reset=False):
+              no_config_check=False,read=True,force_read=False,reset=False):
 
     # -- open or assign cache --
     if isinstance(cache_or_name,ExpCache):
@@ -139,7 +209,7 @@ def get_uuids(exps,cache_or_name,version="v1",
     # -- return already assigned --
     nexps = len(exps)
     ncache = len(cache.uuid_cache.data['config'])
-    if len(exps) == len(cache.uuid_cache.data['config']) and read:
+    if (len(exps) == len(cache.uuid_cache.data['config']) and read) or force_read:
         exps = cache.uuid_cache.data['config']
         uuids = cache.uuid_cache.data['uuid']
         return exps,uuids

@@ -118,20 +118,21 @@ def run_base(base,stages,cache,chkpt_root,
             cfg = create_config(base,exp)
             uuid = get_uuid(cfg,cache,nocheck=nocheck)
 
-            # -- check if experiment stage complete [checkpoint dir] --
+            # -- [optional] check if experiment stage complete [checkpoint dir] --
             complete = check_stage_complete(chkpt_root,uuid,cfg.nepochs)
             if not(load_complete) and complete: continue # only load incomplete stages
+            # print(stage_i,exp_i,cfg.nepochs)
 
-            # -- mange previous stage --
+            # -- manage previous stage --
             if stage_i > 0:
 
                 # -- load info --
                 cfg_prev = get_previous_config(base,stage_prev,exp.prev)
                 uuid_prev = get_uuid(cfg_prev,cache,nocheck=False)
 
-                # -- [optional] check complete --
-                # complete = check_stage_complete(chkpt_root,uuid_prev,cfg_prev.nepochs)
-                # if not(complete): continue # don't add if incomplete previous stage
+                # -- [necessary] check complete --
+                complete = check_stage_complete(chkpt_root,uuid_prev,cfg_prev.nepochs)
+                if not(complete): break # don't add if incomplete previous stage
 
                 # -- copy if previous is complete --
                 rtn = copy_checkpoint(chkpt_root,uuid,uuid_prev,cfg_prev.nepochs)
@@ -148,6 +149,7 @@ def run_base(base,stages,cache,chkpt_root,
 
 def check_stage_complete(root,uuid,nepochs):
     chkpt_fn = get_checkpoint(Path(root)/uuid,uuid,nepochs-1)
+    # print(chkpt_fn,chkpt_fn.exists())
     return chkpt_fn.exists()
 
 def get_uuid(cfg,cache,nocheck=True):
@@ -187,7 +189,8 @@ def copy_checkpoint(root,uuid,uuid_prev,nepochs_prev):
     # -- copy --
     if not chkpt_dir_dest.exists():
         chkpt_dir_dest.mkdir(parents=True)
-    shutil.copy(chkpt_src,chkpt_dest)
+    if not chkpt_dest.exists():
+        shutil.copy(chkpt_src,chkpt_dest)
     return True
 
 def get_previous_config(base,stage,pairs):
@@ -243,7 +246,11 @@ def apply_read_filter(_uuids,_cfgs,read_filter):
     for uuid,cfg in zip(_uuids,_cfgs):
         keep_cfg = True
         for key,val in read_filter.items():
-            keep_cfg = keep_cfg and (cfg[key] == val)
+            if isinstance(val,list):
+                valid = (cfg[key] in val)
+            else:
+                valid = (cfg[key] == val)
+            keep_cfg = keep_cfg and valid
         if keep_cfg:
             uuids.append(uuid)
             cfgs.append(cfg)
