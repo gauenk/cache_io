@@ -101,9 +101,10 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
         if results is None: # check if no result
             exp.uuid = uuid
             if use_wandb:
-                run = wandb.init(project=proj_name,
+                run = wandb.init(id=uuid,
+                                 project=proj_name,
                                  config=wandb_format_exp(exp),
-                                 resume=True)
+                                 resume="allow")
             results = exp_fxn(exp)
             if use_wandb:
                 wandb.log(wandb_format(results))
