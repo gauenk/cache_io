@@ -83,6 +83,7 @@ def copy_results(dst,src_root,src_uuids,src_cfgs,reset=False,links_only=False):
     # -- copy the uuid results --
     cnt = 0
     for uuid in src_uuids:#dst_uuids:
+    # for uuid in uuids_i:
         src_path = src_root / uuid
         dst_path = dst.root / uuid
         if not(src_path.exists()):
