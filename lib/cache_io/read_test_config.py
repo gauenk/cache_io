@@ -59,6 +59,7 @@ def run(fn,cache_name=None,reset=False,skip_dne=False):
         # view.print_loop(te_cfgs,[None for _ in range(len(te_cfgs))],diffs)
 
         # -- combine train and test grid --
+        # print("len(te_cfgs): ",len(te_cfgs))
         exps += trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
                           fill_train,fill_train_overwrite,fill_skips,skip_dne)
 
