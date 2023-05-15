@@ -160,7 +160,7 @@ def wandb_format(results):
         elif isinstance(val,Path):
             fmt[key] = str(val)
         else:
-            recurse_fmt(key,val)            
+            recurse_fmt(key,val)
     # print(results)
     # print(fmt)
     return fmt

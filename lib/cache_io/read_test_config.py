@@ -160,7 +160,10 @@ def get_label(exp,label_info):
         if key in label_info:
             val = label_info[key][exp[key]]
         else:
-            val = exp[key]
+            if key in exp:
+                val = exp[key]
+            else:
+                val = "Missing"
         args.append(val)
     label = ""
     if len(label_info['fmt']) > 0:
