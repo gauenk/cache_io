@@ -73,7 +73,8 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
             cache.get_uuid(exp,uuid=uuids[exp_num])
 
     # -- rank for logging --
-    NODE_RANK = int(os.environ.get('NODE_RANK', 0))
+    NODE_RANK = int(os.environ.get('LOCAL_RANK', 0))
+    print("NODE_RANK: ",NODE_RANK)
 
     # -- run exps --
     nexps = len(exps)

@@ -10,6 +10,10 @@ import json
 # -- io --
 from pathlib import Path
 
+# -- hostname --
+import socket
+hostname = socket.gethostname()
+
 def remove_files(path):
     for fn in path.iterdir():
         os.remove(str(fn))
@@ -38,6 +42,8 @@ def create_launch_msg(pargs,fixed_args,uuid_s,output_dir):
         msg += "#SBATCH %s %s\n" % (sbatch_key,sbatch_val)
     if pargs.with_machines:
         msg += "#SBATCH -C %s\n" % (pargs.machine)
+    if "anvil" in hostname:
+        msg += "#SBATCH -p gpu\n"
     msg += "#SBATCH --job-name %s\n" % (pargs.job_name)
     output_fn =  str(output_dir / ("%s_%d_%d_log.txt" % (uuid_s,pargs.start,pargs.end)))
     msg += "#SBATCH --output %s\n" % (output_fn)
