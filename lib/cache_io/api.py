@@ -5,7 +5,7 @@ Functons for API
 """
 
 # -- printing --
-import tqdm
+import os,tqdm
 import copy
 dcopy = copy.deepcopy
 import pprint
@@ -72,6 +72,9 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
         for exp_num,exp in enumerate(exps):
             cache.get_uuid(exp,uuid=uuids[exp_num])
 
+    # -- rank for logging --
+    NODE_RANK = int(os.environ.get('NODE_RANK', 0))
+
     # -- run exps --
     nexps = len(exps)
     for exp_num,exp in enumerate(exps):
@@ -100,7 +103,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
         # -- run exp --
         if results is None: # check if no result
             exp.uuid = uuid
-            if use_wandb:
+            if use_wandb and NODE_RANK == 0:
                 run = wandb.init(id=uuid,
                                  project=proj_name,
                                  config=wandb_format_exp(exp),
