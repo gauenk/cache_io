@@ -73,7 +73,8 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
             cache.get_uuid(exp,uuid=uuids[exp_num])
 
     # -- rank for logging --
-    NODE_RANK = int(os.environ.get('NODE_RANK', 0))
+    NODE_RANK = int(os.environ.get('LOCAL_RANK', 0))
+    print("NODE_RANK: ",NODE_RANK)
 
     # -- run exps --
     nexps = len(exps)
@@ -197,7 +198,8 @@ def dispatch(enable_dispatch,*args):
     return outs
 
 def get_uuids(exps,cache_or_name,version="v1",
-              no_config_check=False,read=True,force_read=False,reset=False):
+              no_config_check=False,read=True,force_read=False,reset=False,
+              update=False):
 
     # -- open or assign cache --
     if isinstance(cache_or_name,ExpCache):
@@ -211,7 +213,8 @@ def get_uuids(exps,cache_or_name,version="v1",
     # -- return already assigned --
     nexps = len(exps)
     ncache = len(cache.uuid_cache.data['config'])
-    if (len(exps) == len(cache.uuid_cache.data['config']) and read) or force_read:
+    allow_read = read and not(update)
+    if (len(exps) == len(cache.uuid_cache.data['config']) and allow_read) or force_read:
         exps = cache.uuid_cache.data['config']
         uuids = cache.uuid_cache.data['uuid']
         return exps,uuids

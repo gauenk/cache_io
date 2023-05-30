@@ -26,16 +26,18 @@ def process_parser():
     args = edict(vars(args))
     return args
 
-def get_default_account():
+def get_defaults():
     pcname = os.uname().nodename
     if "anvil" in pcname:
         base = "cis230068-gpu"
+        default_time = "2-0:00:00"
     else:
         base = "standby"
-    return base
+        default_time = "0-4:00:00"
+    return base,default_time
 
 def launcher_parser():
-    account = get_default_account()
+    account,default_time = get_defaults()
     desc = "Launches python scripts equipped with 'slurm_parser' to accept arguments"
     parser = argparse.ArgumentParser(
         prog = 'Launching Dispatched Experiments with Slurm',
@@ -60,11 +62,13 @@ def launcher_parser():
     parser.add_argument('-WM','--with_machines',action="store_true",
                         help="Run exp with specified machines.")
     parser.add_argument('-N','--nodes',default=1)
-    parser.add_argument('-T','--time',default="0-4:00:00")
+    parser.add_argument('-T','--time',default=default_time)
     # parser.add_argument('-E','--exclusive',action="store_true",
     #                     help="Run experiment with slurm exclusive flag.")
-    parser.add_argument('--gpus_per_node',default=1)
-    parser.add_argument('--cpus_per_task',default=4)
+    # parser.add_argument('--gpus_per_node',default=1)
+    # parser.add_argument('--cpus_per_node',default=1)
+    parser.add_argument('--ngpus',default=1)
+    parser.add_argument('--ncpus',default=4)
     parser.add_argument('--reset_logs',action="store_true",
                         help="Clear out the dispatch launch and output paths.")
     parser.add_argument('--reset_cache',action="store_true",
