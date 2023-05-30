@@ -110,7 +110,7 @@ def run_launch_files(files,out_files,unique=False):
         else:
             print(slurm_error)
             slurm_id = str(-1)
-        print("Slurm ID: %s\nOutput: %s" % (slurm_id,out_file))
+        print("Slurm ID: %s\nExec: %s\nOutput: %s" % (slurm_id,fn,out_file))
         slurm_ids.append(slurm_id)
         if not(unique):
             time.sleep(4) # don't overwrite the cache of the launched subprocess
