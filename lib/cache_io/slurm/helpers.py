@@ -98,8 +98,8 @@ def get_process_args(args):
 
 def get_fixed_args(args):
     fields = {"account":"-A","nodes":"--nodes",
-              "gpus_per_node":"--gpus-per-node","time":"--time",
-              "cpus_per_task":"--cpus-per-task"}
+              "ngpus":"--gpus-per-node","time":"--time",
+              "ncpus":"--cpus-per-task"}
     slurm_args = edict()
     for args_key,sbatch_key in fields.items():
         slurm_args[sbatch_key] = args[args_key]

@@ -65,8 +65,10 @@ def launcher_parser():
     parser.add_argument('-T','--time',default=default_time)
     # parser.add_argument('-E','--exclusive',action="store_true",
     #                     help="Run experiment with slurm exclusive flag.")
-    parser.add_argument('--gpus_per_node',default=1)
-    parser.add_argument('--cpus_per_task',default=4)
+    # parser.add_argument('--gpus_per_node',default=1)
+    # parser.add_argument('--cpus_per_node',default=1)
+    parser.add_argument('--ngpus',default=1)
+    parser.add_argument('--ncpus',default=4)
     parser.add_argument('--reset_logs',action="store_true",
                         help="Clear out the dispatch launch and output paths.")
     parser.add_argument('--reset_cache',action="store_true",
