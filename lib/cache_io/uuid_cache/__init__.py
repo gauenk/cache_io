@@ -37,6 +37,9 @@ import json,pprint
 import uuid as uuid_gen
 from easydict import EasyDict as edict
 
+import time
+from pytorch_lightning.utilities import rank_zero_only
+
 from ._write import *
 from ._read import *
 from ._utils import *
@@ -109,7 +112,12 @@ class UUIDCache():
             configs.append(self.get_config_from_uuid(uuid))
         return configs
 
+    def wait_for_uuid_file(self):
+        while not(self.uuid_file.exists()):
+            time.sleep(1)
+
     def init_uuid_file(self):
+        if rank_zero_only.rank != 0: self.wait_for_uuid_file()
         if VERBOSE: print(f"Init [{self.uuid_file}]")
         if self.uuid_file.exists(): return None
         if not(self.uuid_file.parents[0].exists()):

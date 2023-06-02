@@ -38,10 +38,18 @@ def write_launch_file(pargs,uuid_s,launch_dir,msg):
 def create_launch_msg(pargs,fixed_args,uuid_s,output_dir):
     pypath = get_python_path()
     msg = r"#!/bin/sh -l" + "\n"*2
+    nodes_gt1 = False
     for sbatch_key,sbatch_val in fixed_args.items():
-        msg += "#SBATCH %s %s\n" % (sbatch_key,sbatch_val)
-    if pargs.with_machines:
-        msg += "#SBATCH -C %s\n" % (pargs.machine)
+        if "node" in sbatch_key:
+            nodes_gt1 = int(sbatch_val) > 1
+        if "gpu" in sbatch_key:
+            msg += "#SBATCH %s:%s\n" % (sbatch_key,sbatch_val)
+            msg += "#SBATCH --ntasks-per-node %s\n" % (sbatch_val)
+        else:
+            msg += "#SBATCH %s %s\n" % (sbatch_key,sbatch_val)
+    # if pargs.with_machines:
+    #     msg += "#SBATCH -C %s\n" % (pargs.machine)
+    msg += "#SBATCH -C %s\n" % ("a100|A100|a30|A30")
     if "anvil" in hostname:
         msg += "#SBATCH -p gpu\n"
     msg += "#SBATCH --job-name %s\n" % (pargs.job_name)
@@ -49,6 +57,7 @@ def create_launch_msg(pargs,fixed_args,uuid_s,output_dir):
     msg += "#SBATCH --output %s\n" % (output_fn)
     msg += "\n\n/bin/hostname\n\n"
     msg += "echo \"Saving log at %s\"\n" % (output_fn)
+    if nodes_gt1: msg += "srun "
     msg += "%s -u %s --start %d --end %d --dispatch" % (pypath,pargs.script,pargs.start,pargs.end)
     if pargs.clear is True:
         msg += " --clear"
@@ -98,7 +107,7 @@ def get_process_args(args):
 
 def get_fixed_args(args):
     fields = {"account":"-A","nodes":"--nodes",
-              "ngpus":"--gpus-per-node","time":"--time",
+              "ngpus":"--gres=gpu","time":"--time",
               "ncpus":"--cpus-per-task"}
     slurm_args = edict()
     for args_key,sbatch_key in fields.items():

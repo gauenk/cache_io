@@ -22,6 +22,9 @@ try:
     import wandb
 except:
     pass
+import time
+from pytorch_lightning.utilities import rank_zero_only
+
 
 # -- cache api --
 from .exps import read,get_exps
@@ -73,8 +76,10 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
             cache.get_uuid(exp,uuid=uuids[exp_num])
 
     # -- rank for logging --
-    NODE_RANK = int(os.environ.get('LOCAL_RANK', 0))
-    print("NODE_RANK: ",NODE_RANK)
+    print("rank_zero: ",rank_zero_only.rank)
+    if rank_zero_only.rank != 0:
+        time.sleep(5)
+        cache.wait_for_uuid_file()
 
     # -- run exps --
     nexps = len(exps)
@@ -104,7 +109,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
         # -- run exp --
         if results is None: # check if no result
             exp.uuid = uuid
-            if use_wandb and NODE_RANK == 0:
+            if use_wandb and rank_zero_only.rank == 0:
                 run = wandb.init(id=uuid,
                                  project=proj_name,
                                  config=wandb_format_exp(exp),
