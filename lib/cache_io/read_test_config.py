@@ -156,7 +156,6 @@ def get_pretrained_best(chkpt_root,tr_cfg,tr_uuid,base):
     epoch,val_loss = -1,1000000
     for fn in path_base.iterdir():
         name = fn.name
-        print(fn.name)
         if not("val_loss" in name): continue
         _epoch = int(name.split("epoch=")[-1].split("-")[0])
         _val_loss = float(name.split("val_loss=")[-1].split(".ckpt")[0])

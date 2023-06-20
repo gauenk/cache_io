@@ -38,7 +38,7 @@ def write_launch_file(pargs,uuid_s,launch_dir,msg):
 def create_launch_msg(pargs,fixed_args,uuid_s,output_dir):
     pypath = get_python_path()
     msg = r"#!/bin/sh -l" + "\n"*2
-    nodes_gt1 = False
+    nodes_gt1 = True#False
     for sbatch_key,sbatch_val in fixed_args.items():
         if "node" in sbatch_key:
             nodes_gt1 = int(sbatch_val) > 1
