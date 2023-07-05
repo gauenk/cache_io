@@ -5,7 +5,7 @@ Read and write experiments based on configs
 
 """
 
-import shutil,os,json,tqdm
+import shutil,os,json,tqdm,time
 import pandas as pd
 from pathlib import Path
 
@@ -122,6 +122,9 @@ class ExpCache():
 
     def get_uuid(self,config,uuid=None,skips=None):
         return self.uuid_cache.get_uuid(config,uuid=uuid,skips=skips)
+
+    def wait_for_uuid_file(self):
+        self.uuid_cache.wait_for_uuid_file()
 
     def add_uuid_config_pair(self,uuid,config):
         self.uuid_cache.add_uuid_config_pair(uuid,config)

@@ -135,6 +135,11 @@ def get_test_pretrained(chkpt_root,te_cfg,tr_cfg,tr_uuid):
         if epoch == -1:
             base = "%s-save-epoch=%02d.ckpt"
             pretrained_path,epoch = get_pretrained_latest(chkpt_root,tr_cfg,tr_uuid,base)
+    elif te_cfg.nepochs == "best":
+        # base = "%s-epoch=%02d-val_loss=%1.2e.ckpt"
+        base = "%s-epoch=%02d-val_loss=%1.2e.ckpt"
+        pretrained_path,epoch = get_pretrained_best(chkpt_root,tr_cfg,tr_uuid,base)
+        assert epoch != -1, "[Error] Must pick at least some epoch."
     else:
         raise ValueError("Uknown value %s" % str(te_cfg.nepochs))
     check_path = chkpt_root / tr_uuid / pretrained_path
@@ -144,6 +149,21 @@ def get_test_pretrained(chkpt_root,te_cfg,tr_cfg,tr_uuid):
 def check_path(chkpt_root,tr_uuid,pretrained_path):
     check_path = chkpt_root / tr_uuid / pretrained_path
     return check_path.exists()
+
+def get_pretrained_best(chkpt_root,tr_cfg,tr_uuid,base):
+    # -- get paths with validation --
+    path_base = chkpt_root / tr_uuid
+    epoch,val_loss = -1,1000000
+    for fn in path_base.iterdir():
+        name = fn.name
+        if not("val_loss" in name): continue
+        _epoch = int(name.split("epoch=")[-1].split("-")[0])
+        _val_loss = float(name.split("val_loss=")[-1].split(".ckpt")[0])
+        if _val_loss < val_loss:
+            epoch = _epoch
+            val_loss = _val_loss
+    path = str(base) % (tr_uuid,epoch,val_loss)
+    return path,epoch
 
 def get_pretrained_latest(chkpt_root,tr_cfg,tr_uuid,base):
     pick_epoch = -1
