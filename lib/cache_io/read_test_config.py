@@ -237,9 +237,11 @@ def append_fixed_paths(fixed_paths,te_cfgs):
     # -- load other opts --
     misc_opts = list(fixed_paths.keys())
     print(misc_opts)
-    del misc_opts[misc_opts.index("path")]
+    if "path" in misc_opts:
+        del misc_opts[misc_opts.index("path")]
     for opt in pretrained_opts:
-        del misc_opts[misc_opts.index(opt)]
+        if opt in misc_opts:
+            del misc_opts[misc_opts.index(opt)]
 
     exps = []
     for te_cfg in te_cfgs:
