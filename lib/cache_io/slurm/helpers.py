@@ -49,7 +49,8 @@ def create_launch_msg(pargs,fixed_args,uuid_s,output_dir):
             msg += "#SBATCH %s %s\n" % (sbatch_key,sbatch_val)
     # if pargs.with_machines:
     #     msg += "#SBATCH -C %s\n" % (pargs.machine)
-    msg += "#SBATCH -C %s\n" % ("a100|A100|a30|A30")
+    if not("anvil" in hostname):
+        msg += "#SBATCH -C %s\n" % ("a100|A100|a30|A30")
     if "anvil" in hostname:
         msg += "#SBATCH -p gpu\n"
     msg += "#SBATCH --job-name %s\n" % (pargs.job_name)
@@ -57,7 +58,8 @@ def create_launch_msg(pargs,fixed_args,uuid_s,output_dir):
     msg += "#SBATCH --output %s\n" % (output_fn)
     msg += "\n\n/bin/hostname\n\n"
     msg += "echo \"Saving log at %s\"\n" % (output_fn)
-    if nodes_gt1: msg += "srun "
+    if nodes_gt1 or True: msg += "srun "
+    # if nodes_gt1 or ("anvil" in hostname): msg += "srun "
     msg += "%s -u %s --start %d --end %d --dispatch" % (pypath,pargs.script,pargs.start,pargs.end)
     if pargs.clear is True:
         msg += " --clear"
@@ -69,7 +71,8 @@ def create_launch_msg(pargs,fixed_args,uuid_s,output_dir):
 def get_python_path():
     pcname = os.uname().nodename
     if "anvil" in pcname:
-        base = "/home/x-kgauen/.conda/envs/2021.05-py38/stnls_paper/bin/python"
+        # base = "/home/x-kgauen/.conda/envs/2021.05-py38/stnls_paper/bin/python"
+        base = "/apps/spack/anvilgpu/apps/anaconda/2021.05-py38-gcc-8.4.1-vrzyh2x/bin/python"
     else:
         base = "/home/gauenk/.pyenv/shims/python"
     return base
