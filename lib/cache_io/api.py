@@ -56,6 +56,8 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
         args = [merge_dispatch,einds,clear,name,version,skip_loop,exps]
         einds,clear,name,skip_loop = dispatch(enable_dispatch,*args)
 
+    print(einds)
+
     # -- open & clear cache --
     cache = ExpCache(name,version)
     if clear: cache.clear()

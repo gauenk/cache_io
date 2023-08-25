@@ -40,11 +40,12 @@ def run(fn,cache_name=None,reset=False,skip_dne=False):
 
     # -- load grids --
     if "train_grid" in data:
-        tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=True)
-        pp.pprint(tr_cfgs[0])
-        tr_uuids = get_uuids(tr_cfgs,data['train_cache_name'])
+        _tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=True)
+        pp.pprint(_tr_cfgs[0])
+        tr_uuids = get_uuids(_tr_cfgs,data['train_cache_name'])
         # w/out learn
         tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=False)
+        pp.pprint(tr_cfgs[0])
         # te_cfgs = load_grid(data['test_grid0'],data['train_grid']) # multiple in future
         fill_train = data['test_grid0'].fill_train_cfg
         fill_train_overwrite = data['test_grid0'].fill_train_overwrite
@@ -107,6 +108,7 @@ def trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
             te_cfg.tr_uuid = tr_uuid
 
             # -- skip DNE --
+            # print(te_cfg.pretrained_path)
             exists = check_path(chkpt_root,tr_uuid,te_cfg.pretrained_path)
             if not(exists):
                 msg = "Pretrained path must exist [%s]" % te_cfg.pretrained_path
@@ -202,7 +204,7 @@ def get_uuids(exps,name,version="v1"):
         uuid = cache.read_uuid(exp)
         if uuid == -1:
             print(uuid)
-            print(exp)
+            pp.pprint(exp)
             print("Couldn't find experiment in the training set.")
             exit(0)
         uuids.append(uuid)
@@ -279,7 +281,6 @@ def append_fixed_paths(fixed_paths,te_cfgs):
             # -- fill misc --
             for opt in misc_opts:
                 exp[opt] = fixed_paths[opt][i]
-
 
             # -- append --
             exps.append(exp)
