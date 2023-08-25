@@ -66,7 +66,9 @@ def run(fn,cache_name=None,reset=False,skip_dne=False):
 
     # -- append fixed pretrained paths --
     if "fixed_paths" in data:
-        exps += append_fixed_paths(data['fixed_paths'],te_cfgs)#data['test_grid0'])
+        exps += append_fixed_paths(data['fixed_paths'],\
+                                   te_cfgs,\
+                                   data['train_cache_name'])
 
     # print("b.")
     # df = pd.DataFrame(exps)
@@ -160,7 +162,9 @@ def get_pretrained_best(chkpt_root,tr_cfg,tr_uuid,base):
         name = fn.name
         if not("val_loss" in name): continue
         _epoch = int(name.split("epoch=")[-1].split("-")[0])
-        _val_loss = float(name.split("val_loss=")[-1].split(".ckpt")[0])
+        _val_loss = name.split("val_loss=")[-1].split(".ckpt")[0]
+        if "-v" in _val_loss: continue
+        _val_loss = float(_val_loss)
         if _val_loss < val_loss:
             epoch = _epoch
             val_loss = _val_loss
@@ -250,7 +254,7 @@ def load_mesh_grid(grid,learn=True):
     exps = mesh_base_var(exp_base,exps_var)
     return exps
 
-def append_fixed_paths(fixed_paths,te_cfgs):
+def append_fixed_paths(fixed_paths,te_cfgs,cache_name):
 
     # -- pretrained opts --
     pretrained_opts = ["root","load","type"]
@@ -278,7 +282,16 @@ def append_fixed_paths(fixed_paths,te_cfgs):
                 if opt in fixed_paths:
                     exp["pretrained_%s" % opt] = fixed_paths[opt][i]
 
-            # -- fill misc --
+            # -- fill from uuid --
+            if 'uuid' in fixed_paths:
+                uuid = fixed_paths['uuid'][i]
+                cache = ExpCache(cache_name)
+                config = cache.get_config_from_uuid(uuid)
+                for key,val in config.items():
+                    if not(key in exp):
+                        exp[key] = val
+
+            # -- fill misc [overwrite from uuid] --
             for opt in misc_opts:
                 exp[opt] = fixed_paths[opt][i]
 

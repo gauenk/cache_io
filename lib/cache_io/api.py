@@ -74,6 +74,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
 
     # -- preset uuids before running exp grid --
     if preset_uuids:
+        print("preset.")
         for exp_num,exp in enumerate(exps):
             cache.get_uuid(exp,uuid=uuids[exp_num])
 
