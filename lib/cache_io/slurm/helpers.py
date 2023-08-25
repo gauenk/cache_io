@@ -49,7 +49,7 @@ def create_launch_msg(pargs,fixed_args,uuid_s,output_dir):
             msg += "#SBATCH %s %s\n" % (sbatch_key,sbatch_val)
     # if pargs.with_machines:
     #     msg += "#SBATCH -C %s\n" % (pargs.machine)
-    msg += "#SBATCH -C %s\n" % ("a100|A100|a30|A30")
+    msg += "#SBATCH -C %s\n" % ("a100|A100")
     if "anvil" in hostname:
         msg += "#SBATCH -p gpu\n"
     msg += "#SBATCH --job-name %s\n" % (pargs.job_name)

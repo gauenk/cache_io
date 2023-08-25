@@ -112,6 +112,7 @@ def match(cfg0,cfg1):
     diffs += compare(cfg1,cfg0)
     return len(diffs) == 0
 
+
 def compare(cfg0,cfg1):
     diffs = []
     for key in cfg0:

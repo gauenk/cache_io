@@ -19,7 +19,7 @@ def compare_config(existing_config,proposed_config,verbose=False,skips=None):
         print(left_cmp,right_cmp,pair_cmp)
     return pair_cmp
 
-# -> FREELY DELETE ME. <-
+# -> FREELY DELETE ME. (the _dev_*) <-
 def _dev_cmp(cfg):
     match = True
     fields = {"arch_name":"n3net","vid_name":"sunflower","ws":15,"wt":0}
@@ -30,9 +30,10 @@ def _dev_cmp(cfg):
     return match
 
 def compare_pair(cfg_a,cfg_b,skips,verbose=False):
+    # [thinking] 07-02-2023: allow "none" values to match old uuids
     for key,value in cfg_a.items():
         if key in skips: continue
-        if not(key in cfg_b):
+        if not(key in cfg_b):# and not(cfg_a[key] is None): [not what i want]
             if verbose: print("missing key: ",key)
             return False
         if cfg_b[key] != value:
