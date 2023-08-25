@@ -283,8 +283,8 @@ def append_fixed_paths(fixed_paths,te_cfgs,cache_name):
                     exp["pretrained_%s" % opt] = fixed_paths[opt][i]
 
             # -- fill from uuid --
-            if 'uuid' in fixed_paths:
-                uuid = fixed_paths['uuid'][i]
+            if 'tr_uuid' in fixed_paths:
+                uuid = fixed_paths['tr_uuid'][i]
                 cache = ExpCache(cache_name)
                 config = cache.get_config_from_uuid(uuid)
                 for key,val in config.items():
