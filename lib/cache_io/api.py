@@ -149,7 +149,7 @@ def wandb_format(results):
     def isstr(value):
         return isinstance(value,str) or isinstance(value,np.str)
     def isfloat(value):
-        return isinstance(value,float) or isinstance(value,np.float)
+        return isinstance(value,float) or isinstance(value,np.float) or isinstance(value,np.float32)
     def recurse_fmt(key,val):
         if not(islist(val)):
             fmt[key] = val
