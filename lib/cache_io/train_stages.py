@@ -119,7 +119,8 @@ def run_base(base,stages,cache,chkpt_root,
             uuid = get_uuid(cfg,cache,nocheck=nocheck)
 
             # -- [optional] check if experiment stage complete [checkpoint dir] --
-            complete = check_stage_complete(chkpt_root,uuid,cfg.nepochs)
+            niters = cfg.nsteps if "nsteps" in cfg else cfg.nepochs
+            complete = check_stage_complete(chkpt_root,uuid,niters)
             if not(load_complete) and complete: continue # only load incomplete stages
             # print(stage_i,exp_i,cfg.nepochs)
 
@@ -131,7 +132,8 @@ def run_base(base,stages,cache,chkpt_root,
                 uuid_prev = get_uuid(cfg_prev,cache,nocheck=False)
 
                 # -- [necessary] check complete --
-                complete = check_stage_complete(chkpt_root,uuid_prev,cfg_prev.nepochs)
+                niters = cfg_prev.nsteps if "nsteps" in cfg_prev else cfg_prev.nepochs
+                complete = check_stage_complete(chkpt_root,uuid_prev,niters)
                 if not(complete): break # don't add if incomplete previous stage
 
                 # -- copy if previous is complete --
@@ -147,8 +149,8 @@ def run_base(base,stages,cache,chkpt_root,
     # -- return values --
     return train_exps,train_uuids
 
-def check_stage_complete(root,uuid,nepochs):
-    chkpt_fn = get_checkpoint(Path(root)/uuid,uuid,nepochs-1)
+def check_stage_complete(root,uuid,niters):
+    chkpt_fn = get_checkpoint(Path(root)/uuid,uuid,niters-1)
     # print(chkpt_fn,chkpt_fn.exists())
     return chkpt_fn.exists()
 
