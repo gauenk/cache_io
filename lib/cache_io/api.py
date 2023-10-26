@@ -56,6 +56,8 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
         args = [merge_dispatch,einds,clear,name,version,skip_loop,exps]
         einds,clear,name,skip_loop = dispatch(enable_dispatch,*args)
 
+    print(einds)
+
     # -- open & clear cache --
     cache = ExpCache(name,version)
     if clear: cache.clear()
@@ -72,6 +74,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
 
     # -- preset uuids before running exp grid --
     if preset_uuids:
+        print("preset.")
         for exp_num,exp in enumerate(exps):
             cache.get_uuid(exp,uuid=uuids[exp_num])
 
@@ -146,7 +149,7 @@ def wandb_format(results):
     def isstr(value):
         return isinstance(value,str) or isinstance(value,np.str)
     def isfloat(value):
-        return isinstance(value,float) or isinstance(value,np.float)
+        return isinstance(value,float) or isinstance(value,np.float) or isinstance(value,np.float32)
     def recurse_fmt(key,val):
         if not(islist(val)):
             fmt[key] = val

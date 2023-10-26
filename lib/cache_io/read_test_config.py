@@ -40,11 +40,12 @@ def run(fn,cache_name=None,reset=False,skip_dne=False):
 
     # -- load grids --
     if "train_grid" in data:
-        tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=True)
-        pp.pprint(tr_cfgs[0])
-        tr_uuids = get_uuids(tr_cfgs,data['train_cache_name'])
+        _tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=True)
+        pp.pprint(_tr_cfgs[0])
+        tr_uuids = get_uuids(_tr_cfgs,data['train_cache_name'])
         # w/out learn
         tr_cfgs = load_train_grid(data['train_grid'],chkpt_root,learn=False)
+        pp.pprint(tr_cfgs[0])
         # te_cfgs = load_grid(data['test_grid0'],data['train_grid']) # multiple in future
         fill_train = data['test_grid0'].fill_train_cfg
         fill_train_overwrite = data['test_grid0'].fill_train_overwrite
@@ -65,7 +66,9 @@ def run(fn,cache_name=None,reset=False,skip_dne=False):
 
     # -- append fixed pretrained paths --
     if "fixed_paths" in data:
-        exps += append_fixed_paths(data['fixed_paths'],te_cfgs)#data['test_grid0'])
+        exps += append_fixed_paths(data['fixed_paths'],\
+                                   te_cfgs,\
+                                   data['train_cache_name'])
 
     # print("b.")
     # df = pd.DataFrame(exps)
@@ -107,6 +110,7 @@ def trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
             te_cfg.tr_uuid = tr_uuid
 
             # -- skip DNE --
+            # print(te_cfg.pretrained_path)
             exists = check_path(chkpt_root,tr_uuid,te_cfg.pretrained_path)
             if not(exists):
                 msg = "Pretrained path must exist [%s]" % te_cfg.pretrained_path
@@ -158,7 +162,9 @@ def get_pretrained_best(chkpt_root,tr_cfg,tr_uuid,base):
         name = fn.name
         if not("val_loss" in name): continue
         _epoch = int(name.split("epoch=")[-1].split("-")[0])
-        _val_loss = float(name.split("val_loss=")[-1].split(".ckpt")[0])
+        _val_loss = name.split("val_loss=")[-1].split(".ckpt")[0]
+        if "-v" in _val_loss: continue
+        _val_loss = float(_val_loss)
         if _val_loss < val_loss:
             epoch = _epoch
             val_loss = _val_loss
@@ -202,7 +208,7 @@ def get_uuids(exps,name,version="v1"):
         uuid = cache.read_uuid(exp)
         if uuid == -1:
             print(uuid)
-            print(exp)
+            pp.pprint(exp)
             print("Couldn't find experiment in the training set.")
             exit(0)
         uuids.append(uuid)
@@ -248,7 +254,7 @@ def load_mesh_grid(grid,learn=True):
     exps = mesh_base_var(exp_base,exps_var)
     return exps
 
-def append_fixed_paths(fixed_paths,te_cfgs):
+def append_fixed_paths(fixed_paths,te_cfgs,cache_name):
 
     # -- pretrained opts --
     pretrained_opts = ["root","load","type"]
@@ -257,9 +263,11 @@ def append_fixed_paths(fixed_paths,te_cfgs):
     # -- load other opts --
     misc_opts = list(fixed_paths.keys())
     print(misc_opts)
-    del misc_opts[misc_opts.index("path")]
+    if "path" in misc_opts:
+        del misc_opts[misc_opts.index("path")]
     for opt in pretrained_opts:
-        del misc_opts[misc_opts.index(opt)]
+        if opt in misc_opts:
+            del misc_opts[misc_opts.index(opt)]
 
     exps = []
     for te_cfg in te_cfgs:
@@ -274,10 +282,18 @@ def append_fixed_paths(fixed_paths,te_cfgs):
                 if opt in fixed_paths:
                     exp["pretrained_%s" % opt] = fixed_paths[opt][i]
 
-            # -- fill misc --
+            # -- fill from uuid --
+            if 'tr_uuid' in fixed_paths:
+                uuid = fixed_paths['tr_uuid'][i]
+                cache = ExpCache(cache_name)
+                config = cache.get_config_from_uuid(uuid)
+                for key,val in config.items():
+                    if not(key in exp):
+                        exp[key] = val
+
+            # -- fill misc [overwrite from uuid] --
             for opt in misc_opts:
                 exp[opt] = fixed_paths[opt][i]
-
 
             # -- append --
             exps.append(exp)
