@@ -23,13 +23,15 @@ from .helpers import get_job_names
 def dispatch_process(merge_flag,einds,clear,name,version,skip_loop,exps):
     # if we merge, we don't run the process
     script_args = script_parser()
+    rerun = script_args.rerun
     skip_loop = script_args.skip_loop or skip_loop
+    skip_loop = False if rerun else skip_loop
 
     if merge_flag or script_args.merge_cache:
         merge(script_args,name,version,exps)
     elif script_args.dispatch is True:
         einds,clear,name = run_process(einds,clear,name,version,exps)
-    return einds,clear,name,skip_loop
+    return einds,clear,name,skip_loop,rerun
 
 def run_launcher(base):
     """

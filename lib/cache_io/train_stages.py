@@ -33,6 +33,7 @@ from easydict import EasyDict as edict
 from .exp_cache import ExpCache
 from .exps import get_exps
 from .exps import load_edata
+from .misc import optional
 
 def run(fn,cache_name,cache_version="v1",
         load_complete=True,stage_select=-1,
@@ -119,8 +120,11 @@ def run_base(base,stages,cache,chkpt_root,
             uuid = get_uuid(cfg,cache,nocheck=nocheck)
 
             # -- [optional] check if experiment stage complete [checkpoint dir] --
-            niters = cfg.nsteps if "nsteps" in cfg else cfg.nepochs
-            complete = check_stage_complete(chkpt_root,uuid,niters)
+            # niters = cfg.nsteps if "nsteps" in cfg else cfg.nepochs
+            # complete = check_stage_complete(chkpt_root,uuid,niters)
+            nsteps = optional(cfg,"nsteps",None)
+            nepochs = optional(cfg,"nepochs",None)
+            complete = check_stage_complete(chkpt_root,uuid,nsteps,nepochs)
             if not(load_complete) and complete: continue # only load incomplete stages
             # print(stage_i,exp_i,cfg.nepochs)
 
@@ -132,8 +136,11 @@ def run_base(base,stages,cache,chkpt_root,
                 uuid_prev = get_uuid(cfg_prev,cache,nocheck=False)
 
                 # -- [necessary] check complete --
-                niters = cfg_prev.nsteps if "nsteps" in cfg_prev else cfg_prev.nepochs
-                complete = check_stage_complete(chkpt_root,uuid_prev,niters)
+                # niters = cfg_prev.nsteps if "nsteps" in cfg_prev else cfg_prev.nepochs
+                # complete = check_stage_complete(chkpt_root,uuid_prev,niters)
+                nsteps = optional(cfg_prev,"nsteps",None)
+                nepochs = optional(cfg_prev,"nepochs",None)
+                complete = check_stage_complete(chkpt_root,uuid_prev,nsteps,nepochs)
                 if not(complete): break # don't add if incomplete previous stage
 
                 # -- copy if previous is complete --
@@ -149,8 +156,13 @@ def run_base(base,stages,cache,chkpt_root,
     # -- return values --
     return train_exps,train_uuids
 
-def check_stage_complete(root,uuid,niters):
-    chkpt_fn = get_checkpoint(Path(root)/uuid,uuid,niters-1)
+def check_stage_complete(root,uuid,nsteps,nepochs):
+    if not(nsteps is None):
+        chkpt_fn = get_checkpoint(Path(root)/uuid,uuid,nsteps)
+    elif not(nepochs is None):
+        chkpt_fn = get_checkpoint(Path(root)/uuid,uuid,nepochs-1)
+    else:
+        return False
     # print(chkpt_fn,chkpt_fn.exists())
     return chkpt_fn.exists()
 

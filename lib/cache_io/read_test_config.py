@@ -287,6 +287,7 @@ def append_fixed_paths(fixed_paths,te_cfgs,cache_name):
                 uuid = fixed_paths['tr_uuid'][i]
                 cache = ExpCache(cache_name)
                 config = cache.get_config_from_uuid(uuid)
+                check_config(uuid,config)
                 for key,val in config.items():
                     if not(key in exp):
                         exp[key] = val
@@ -298,6 +299,11 @@ def append_fixed_paths(fixed_paths,te_cfgs,cache_name):
             # -- append --
             exps.append(exp)
     return exps
+
+def check_config(uuid,config):
+    if config == -1:
+        print(f"UUID does not exit in cache [{uuid}]")
+        exit()
 
 def append_cfg0(cfg0,cfg1,overwrite=False,skips=None):
     _skips = ["uuid"]

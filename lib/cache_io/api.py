@@ -54,9 +54,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
     if not(enable_dispatch is None):
         assert (einds is None),"Indices are selected from dispatch"
         args = [merge_dispatch,einds,clear,name,version,skip_loop,exps]
-        einds,clear,name,skip_loop = dispatch(enable_dispatch,*args)
-
-    print(einds)
+        einds,clear,name,skip_loop,rerun = dispatch(enable_dispatch,*args)
 
     # -- open & clear cache --
     cache = ExpCache(name,version)
@@ -74,12 +72,12 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
 
     # -- preset uuids before running exp grid --
     if preset_uuids:
-        print("preset.")
+        # print("preset.")
         for exp_num,exp in enumerate(exps):
             cache.get_uuid(exp,uuid=uuids[exp_num])
 
     # -- rank for logging --
-    print("rank_zero: ",rank_zero_only.rank)
+    # print("rank_zero: ",rank_zero_only.rank)
     if rank_zero_only.rank != 0:
         time.sleep(5)
         cache.wait_for_uuid_file()
@@ -124,10 +122,14 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
             cache.save_exp(uuid,exp,results) # save to cache
 
     # -- records --
+    records_reload = True if rerun else records_reload
     if to_records_fast:
         records = cache.to_records_fast(records_fn,records_reload,results_fxn=results_fxn)
     else:
-        records = cache.to_records(exps,records_fn,records_reload,results_fxn=results_fxn)
+        try:
+            records = cache.to_records(exps,records_fn,records_reload,results_fxn=results_fxn)
+        except:
+            records = None
 
     return records
 

@@ -129,6 +129,7 @@ def script_parser():
     # parser.add_argument('--launched_with_slurm',action="store_true")
     parser.add_argument('--dispatch',action="store_true")
     parser.add_argument('--skip_loop',action="store_true")
+    parser.add_argument('--rerun',action="store_true")
     parser.add_argument('-J','--job_id',type=str,default=None)
     parser.add_argument('--nexps',type=int,default=None)
     parser.add_argument('--nexps_pp',type=int,default=None)
