@@ -122,9 +122,11 @@ def run_base(base,stages,cache,chkpt_root,
             # -- [optional] check if experiment stage complete [checkpoint dir] --
             # niters = cfg.nsteps if "nsteps" in cfg else cfg.nepochs
             # complete = check_stage_complete(chkpt_root,uuid,niters)
-            nsteps = optional(cfg,"nsteps",None)
-            nepochs = optional(cfg,"nepochs",None)
-            complete = check_stage_complete(chkpt_root,uuid,nsteps,nepochs)
+            nsteps = optional(cfg,"nsteps",0)
+            nepochs = optional(cfg,"nepochs",0)-1
+            niters = nsteps if nsteps > 0 else nepochs
+            step_type = "global_step" if nsteps > 0 else "epoch"
+            complete = check_stage_complete(chkpt_root,uuid,niters,step_type)
             if not(load_complete) and complete: continue # only load incomplete stages
             # print(stage_i,exp_i,cfg.nepochs)
 
@@ -138,13 +140,15 @@ def run_base(base,stages,cache,chkpt_root,
                 # -- [necessary] check complete --
                 # niters = cfg_prev.nsteps if "nsteps" in cfg_prev else cfg_prev.nepochs
                 # complete = check_stage_complete(chkpt_root,uuid_prev,niters)
-                nsteps = optional(cfg_prev,"nsteps",None)
-                nepochs = optional(cfg_prev,"nepochs",None)
-                complete = check_stage_complete(chkpt_root,uuid_prev,nsteps,nepochs)
+                nsteps = optional(cfg_prev,"nsteps",0)
+                nepochs = optional(cfg_prev,"nepochs",0)-1
+                niters = nsteps if nsteps > 0 else nepochs
+                step_type = "global_step" if nsteps > 0 else "epoch"
+                complete = check_stage_complete(chkpt_root,uuid_prev,niters,step_type)
                 if not(complete): break # don't add if incomplete previous stage
 
                 # -- copy if previous is complete --
-                rtn = copy_checkpoint(chkpt_root,uuid,uuid_prev,cfg_prev.nepochs)
+                rtn = copy_checkpoint(chkpt_root,uuid,uuid_prev,niters,step_type)
                 if rtn is False:
                     msg = "Warning: Failed to copy [stage,exp]: [%d,%d]"
                     print(msg % (stage_i,exp_i))
@@ -156,14 +160,8 @@ def run_base(base,stages,cache,chkpt_root,
     # -- return values --
     return train_exps,train_uuids
 
-def check_stage_complete(root,uuid,nsteps,nepochs):
-    if not(nsteps is None):
-        chkpt_fn = get_checkpoint(Path(root)/uuid,uuid,nsteps)
-    elif not(nepochs is None):
-        chkpt_fn = get_checkpoint(Path(root)/uuid,uuid,nepochs-1)
-    else:
-        return False
-    # print(chkpt_fn,chkpt_fn.exists())
+def check_stage_complete(root,uuid,niters,step_type):
+    chkpt_fn = get_checkpoint(Path(root)/uuid,uuid,niters,step_type)
     return chkpt_fn.exists()
 
 def get_uuid(cfg,cache,nocheck=True):
@@ -180,7 +178,7 @@ def create_config(base,exp):
         cfg[key] = exp[key]
     return cfg
 
-def copy_checkpoint(root,uuid,uuid_prev,nepochs_prev):
+def copy_checkpoint(root,uuid,uuid_prev,niters_prev,step_type):
 
     # -- shared base --
     root = Path(root)
@@ -188,7 +186,7 @@ def copy_checkpoint(root,uuid,uuid_prev,nepochs_prev):
 
     # -- src --
     chkpt_dir_src = root / uuid_prev
-    chkpt_src = get_checkpoint(chkpt_dir_src,uuid_prev,nepochs_prev-1)
+    chkpt_src = get_checkpoint(chkpt_dir_src,uuid_prev,niters_prev-1,step_type)
     good_chkpt = chkpt_src.exists() and chkpt_src.is_file()
     if not(good_chkpt):
         return False
@@ -197,8 +195,6 @@ def copy_checkpoint(root,uuid,uuid_prev,nepochs_prev):
     chkpt_dir_dest = root / uuid
     dest_name = chkpt_src.name.replace(uuid_prev,uuid)
     chkpt_dest = chkpt_dir_dest / dest_name
-    # print(chkpt_src,chkpt_dest)
-    # exit(0)
 
     # -- copy --
     if not chkpt_dir_dest.exists():
@@ -228,8 +224,8 @@ def check_keys(exp,pairs):
         equal = equal and (val == exp[key])
     return equal
 
-def get_checkpoint(checkpoint_dir,uuid,nepochs):
-    chkpt_fn = Path(checkpoint_dir) / ("%s-epoch=%02d.ckpt" % (uuid,nepochs))
+def get_checkpoint(checkpoint_dir,uuid,nepochs,step_type):
+    chkpt_fn = Path(checkpoint_dir) / ("%s-%s=%02d.ckpt" % (uuid,step_type,nepochs))
     return chkpt_fn
 
 def load_train_base(stages,use_learn=True):
