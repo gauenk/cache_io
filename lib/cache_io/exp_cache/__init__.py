@@ -361,8 +361,10 @@ class ExpCache():
         # -- load each record --
         records = []
         for config in tqdm(exps):
+            # print(exps)
             results = self.load_exp(config)
             uuid = self.get_uuid(config)
+            # print(results is None,uuid)
             if results is None: continue
             results = results_fxn(results)
             self.append_to_flat_record(records,uuid,config,results)

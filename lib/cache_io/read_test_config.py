@@ -125,6 +125,25 @@ def trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
     return exps
 
 def get_test_pretrained(chkpt_root,te_cfg,tr_cfg,tr_uuid):
+    if "nsteps" in te_cfg:
+        return get_test_pretrained_nsteps(chkpt_root,te_cfg,tr_cfg,tr_uuid)
+    else:
+        return get_test_pretrained_nepochs(chkpt_root,te_cfg,tr_cfg,tr_uuid)
+
+def get_test_pretrained_nsteps(chkpt_root,te_cfg,tr_cfg,tr_uuid):
+    if isinstance(te_cfg.nsteps,int):
+        pretrained_path = "%s-save-global_step=%02d.ckpt" % (tr_uuid,te_cfg.nsteps)
+        check_path = chkpt_root / tr_uuid / pretrained_path
+        print(check_path)
+        assert check_path.exists()
+    elif te_cfg.nsteps == "latest":
+        base = "%s-save-global_step=%02d.ckpt"
+        pretrained_path,step = get_pretrained_latest(chkpt_root,tr_cfg,
+                                                      tr_uuid,base,'nsteps')
+    check_path = chkpt_root / tr_uuid / pretrained_path
+    return str(pretrained_path)
+
+def get_test_pretrained_nepochs(chkpt_root,te_cfg,tr_cfg,tr_uuid):
     if isinstance(te_cfg.nepochs,int):
         pretrained_path = "%s-epoch=%02d.ckpt" % (tr_uuid,te_cfg.nepochs-1)
         check_path = chkpt_root / tr_uuid / pretrained_path
@@ -171,10 +190,10 @@ def get_pretrained_best(chkpt_root,tr_cfg,tr_uuid,base):
     path = str(base) % (tr_uuid,epoch,val_loss)
     return path,epoch
 
-def get_pretrained_latest(chkpt_root,tr_cfg,tr_uuid,base):
+def get_pretrained_latest(chkpt_root,tr_cfg,tr_uuid,base,field="nepochs"):
     pick_epoch = -1
     pretrained_path = base % (tr_uuid,-1)
-    for epoch in range(tr_cfg.nepochs):
+    for epoch in range(tr_cfg[field]):
         path = chkpt_root / tr_uuid / (base % (tr_uuid,epoch))
         if path.exists():
             pretrained_path = path.name

@@ -91,7 +91,6 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
 
         # -- logic --
         uuid = cache.get_uuid(exp,uuid=uuids[exp_num]) # assing ID to each Dict in Meshgrid
-
         # -- info --
         if verbose:
             print("-="*25+"-")
@@ -115,7 +114,7 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
                                  project=proj_name,
                                  config=wandb_format_exp(exp),
                                  resume="allow")
-            results = exp_fxn(exp)
+            results = exp_fxn(dcopy(exp))
             if use_wandb:
                 wandb.log(wandb_format(results))
                 wandb.finish()
@@ -127,7 +126,8 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
         records = cache.to_records_fast(records_fn,records_reload,results_fxn=results_fxn)
     else:
         try:
-            records = cache.to_records(exps,records_fn,records_reload,results_fxn=results_fxn)
+            records = cache.to_records(exps,records_fn,records_reload,
+                                       results_fxn=results_fxn)
         except:
             records = None
 

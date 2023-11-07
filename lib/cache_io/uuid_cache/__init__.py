@@ -136,6 +136,10 @@ class UUIDCache():
         if uuid_cfg == -1:
             if VERBOSE: print("Creating a new UUID and adding to cache file.")
             uuid = str(uuid_gen.uuid4()) if uuid is None else uuid
+            if not('uuid' in exp_config):
+                exp_config['uuid'] = uuid
+            else:
+                assert exp_config['uuid'] == uuid,"uuids must match"
             self.add_uuid_config_pair(uuid,exp_config,skips=skips)
             # new_pair = edict({'uuid':uuid,'config':exp_config})
             # append_new_pair(self.data,self.uuid_file,new_pair)
