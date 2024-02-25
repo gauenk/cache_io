@@ -26,6 +26,6 @@ def get_tensor_cache_names(path,data):
         if isinstance(data,dict): names = np.array(list(data.keys))
         else: names = None
     else:
-        names = np.load(names_fn,allow_pickle=False)        
+        names = np.load(names_fn,allow_pickle=False)
     return names
 

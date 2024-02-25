@@ -25,7 +25,7 @@ class TensorCache():
 
     def convert_tensors_to_files(self,uuid,results):
         path = self.root / uuid # used to just be self.root
-        return convert_tensors_to_files(path,results)
+        return convert_list_tensors_to_files(path,results)
 
     #------------------------------------
     #         Helper Functions

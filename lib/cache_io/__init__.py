@@ -13,4 +13,5 @@ from .exps import get_exps,get_exp_list,append_listed
 from . import exps
 from . import train_stages
 from . import read_test_config
+from .read_test_config import fill_test_shell
 from . import view

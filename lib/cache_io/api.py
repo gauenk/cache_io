@@ -125,6 +125,8 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
     if to_records_fast:
         records = cache.to_records_fast(records_fn,records_reload,results_fxn=results_fxn)
     else:
+        records = cache.to_records(exps,records_fn,records_reload,
+                                   results_fxn=results_fxn)
         try:
             records = cache.to_records(exps,records_fn,records_reload,
                                        results_fxn=results_fxn)

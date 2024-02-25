@@ -14,10 +14,19 @@ def convert_files_to_tensors(root,results):
         tensors[field] = data
     return tensors
 
-def convert_tensors_to_files(root,results):
+def convert_list_tensors_to_files(root,results):
+    if isinstance(results,list):
+        for i,result_i in enumerate(results):
+            files = convert_tensors_to_files(root,result_i,overwrite=(i==0))
+        # print(files)
+    else:
+        files = convert_tensors_to_files(root,results,overwrite=True)
+    return files
+
+def convert_tensors_to_files(root,results,overwrite=True):
     files = {}
     for field,field_data in results.items():
         path = root / field
-        append_tensor_cache(path,field_data,overwrite=True)
+        ll_append_tensor_cache(path,field_data,overwrite=overwrite)
         files[field] = str(path)
     return files

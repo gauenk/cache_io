@@ -35,7 +35,7 @@ def run(fn,cache_name=None,reset=False,skip_dne=False):
     # -- shared --
     chkpt_root = data['chkpt_root']
     te_cfgs = load_grid(data['test_grid0']) # multiple in future
-    label_info = data['label_info']
+    label_info = data['label_info'] if "label_info" in data else None
     chkpt_root = Path(data.chkpt_root)
 
     # -- load grids --
@@ -94,6 +94,12 @@ def run(fn,cache_name=None,reset=False,skip_dne=False):
         exp_cache.save_raw_fast(uuids,exps,res)
     return exps
 
+def fill_test_shell(tr_fn,te_fn):
+    data_tr = read(tr_fn)
+    data_te = read(te_fn)
+    data_te['train_grid']['mesh0'] = data_tr['mesh']
+    return data_te
+
 def trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
               fill_train,fill_train_overwrite,fill_skips,skip_dne):
     exps = []
@@ -105,8 +111,9 @@ def trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,
                             skips=fill_skips)
             te_cfg.pretrained_path = get_test_pretrained(chkpt_root,te_cfg,
                                                          tr_cfg,tr_uuid)
-            te_cfg.label0 = get_label(tr_cfg,label_info)
-            te_cfg.label1 = get_label(te_cfg,label_info)
+            if not(label_info is None):
+                te_cfg.label0 = get_label(tr_cfg,label_info)
+                te_cfg.label1 = get_label(te_cfg,label_info)
             te_cfg.tr_uuid = tr_uuid
 
             # -- skip DNE --
@@ -134,7 +141,7 @@ def get_test_pretrained_nsteps(chkpt_root,te_cfg,tr_cfg,tr_uuid):
     if isinstance(te_cfg.nsteps,int):
         pretrained_path = "%s-save-global_step=%02d.ckpt" % (tr_uuid,te_cfg.nsteps)
         check_path = chkpt_root / tr_uuid / pretrained_path
-        print(check_path)
+        # print(check_path)
         assert check_path.exists()
     elif te_cfg.nsteps == "latest":
         base = "%s-save-global_step=%02d.ckpt"
@@ -195,12 +202,14 @@ def get_pretrained_latest(chkpt_root,tr_cfg,tr_uuid,base,field="nepochs"):
     pretrained_path = base % (tr_uuid,-1)
     for epoch in range(tr_cfg[field]):
         path = chkpt_root / tr_uuid / (base % (tr_uuid,epoch))
+        # print(path)
         if path.exists():
             pretrained_path = path.name
             pick_epoch = epoch
     return pretrained_path,pick_epoch
 
 def get_label(exp,label_info):
+    if label_info is None: return None
     args = []
     for key in label_info['keys']:
         if key in label_info:
@@ -362,7 +371,14 @@ def create_config(base,exp):
     return cfg
 
 def read(fn):
-    with open(fn,"r") as stream:
-        data = yaml.safe_load(stream)
-    return edict(data)
+    suffix = None
+    try: suffix = Path(fn).suffix
+    except: pass
+    if suffix == ".cfg":
+        with open(fn,"r") as stream:
+            data = yaml.safe_load(stream)
+        return edict(data)
+    else:
+        data = fn # readability; this is data, not a filename
+        return edict(data)
 

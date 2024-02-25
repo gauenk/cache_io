@@ -33,11 +33,13 @@ def isfloat(num):
         return False
 
 def isstr(num):
-    try:
-        num = str(num)
-        return True
-    except:
-        return False
+    return issubclass(type(num), str)
+    # and not(
+    # try:
+    #     num = str(num)
+    #     return True
+    # except:
+    #     return False
 
 
 class ExpCache():
@@ -399,9 +401,12 @@ class ExpCache():
             elif len(result) > rlen and rlen > 1:
                 raise ValueError("We can't have multiple results lengths.")
 
+
         # -- repeat uuid --
         uuid_np = repeat(np.array([str(uuid)]),'1 -> r',r=rlen)
         record['uuid'] = list(uuid_np)
+        # print(record)
+        # exit()
 
         # -- standard append for config; each is a single value --
         for key,value in config.items():
