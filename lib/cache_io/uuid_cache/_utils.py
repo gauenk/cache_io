@@ -12,9 +12,13 @@ def compare_config(existing_config,proposed_config,verbose=False,skips=None):
         print(existing_config)
         verbose = True
     skips = ["uuid"] if skips is None else ["uuid",]+skips
+    # verbose=True
     left_cmp = compare_pair(existing_config,proposed_config,skips,verbose)
     right_cmp = compare_pair(proposed_config,existing_config,skips,verbose)
     pair_cmp = left_cmp and right_cmp
+    # if (left_cmp is True) or (right_cmp is True):
+    #     print(left_cmp,right_cmp)
+    #     exit()
     if dev_check and _dev_cmp(existing_config):
         print(left_cmp,right_cmp,pair_cmp)
     return pair_cmp

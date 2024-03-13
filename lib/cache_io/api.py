@@ -90,7 +90,8 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
         if skip_loop: break
 
         # -- logic --
-        uuid = cache.get_uuid(exp,uuid=uuids[exp_num]) # assing ID to each Dict in Meshgrid
+        uuid = cache.get_uuid(exp,uuid=uuids[exp_num]) # assing ID to each Dict in Mesh
+
         # -- info --
         if verbose:
             print("-="*25+"-")
@@ -134,6 +135,20 @@ def run_exps(exp_file_or_list,exp_fxn,name=None,version="v1",clear_fxn=None,
             records = None
 
     return records
+
+def results_from_uuids(uuids,name,version):
+    # -- get cache info --
+    name,version = cache_info([],name=name,version=version)
+    cache = ExpCache(name,version)
+    res = [cache.read_results(uuid) for uuid in uuids]
+    return res
+
+def results_from_exps(exps,name,version):
+    # -- get cache info --
+    name,version = cache_info([],name=name,version=version)
+    cache = ExpCache(name,version)
+    res = [cache.load_exp(exp) for exp in exps]
+    return res
 
 def wandb_format_exp(exp):
     exp = dcopy(exp)

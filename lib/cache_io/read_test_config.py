@@ -98,6 +98,7 @@ def fill_test_shell(tr_fn,te_fn):
     data_tr = read(tr_fn)
     data_te = read(te_fn)
     data_te['train_grid']['mesh0'] = data_tr['mesh']
+    data_te['train_grid']['learning'] = data_tr['learning']
     return data_te
 
 def trte_mesh(tr_cfgs,tr_uuids,te_cfgs,label_info,chkpt_root,

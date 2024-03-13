@@ -20,7 +20,13 @@ def get_uuid_from_config(data,exp_config,skips=None):
     verbose = False
     for uuid,config in zip(data.uuid,data.config):
         match = compare_config(config,exp_config,verbose,skips=skips)
-        if match: return uuid
+        if match:
+            # print(uuid,exp_config['spa_version'])
+            # # exit()
+            return uuid
+    # print("match: ",match)
+    # print(exp_config)
+    # exit()
     return -1 # no match
 
 def get_config_from_uuid(data,exp_uuid):

@@ -117,7 +117,9 @@ def run_base(base,stages,cache,chkpt_root,
 
             # -- create full config --
             cfg = create_config(base,exp)
+            # print("nocheck: ",nocheck)
             uuid = get_uuid(cfg,cache,nocheck=nocheck)
+            # print(uuid)
 
             # -- [optional] check if experiment stage complete [checkpoint dir] --
             # niters = cfg.nsteps if "nsteps" in cfg else cfg.nepochs
